@@ -273,6 +273,8 @@ const CalcSE = () =>{
 
 
                     Diag = "Normal, Check Anion Gap";
+                    displayDiag(Diag);
+                    return; // Stop further processing for normal values
                     
                 }
             }
