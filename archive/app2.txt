@@ -1,0 +1,96 @@
+   <div >
+        <h1 className = "label">ACID BASE MEDICAL DIAGNOSIS</h1>
+          <h2 className = "label">Please Check History and Exclude Normal ABG Samples</h2>
+          
+        <input className = "input"
+            type="number"
+             placeholder="pH Value"
+            // value={query}
+            // onChange={(e) => setQuery(e.target.value)}
+            // onKeyPress = {search}
+
+        />
+                <input
+            type="number"
+            className="input"
+            placeholder="PaCO2 Value (mm Hg)"
+            // value={query}
+            // onChange={(e) => setQuery(e.target.value)}
+            // onKeyPress = {search}
+
+        />
+
+
+                <input
+            type="number"
+            className="input"
+            placeholder="HCO3 Value (mmol/l) "
+            // value={query}
+            // onChange={(e) => setQuery(e.target.value)}
+            // onKeyPress = {search}
+
+        />
+
+        <input
+                    type="number"
+                    className="input"
+                    placeholder="Ur.Chloride Value"
+                    // value={query}
+                    // onChange={(e) => setQuery(e.target.value)}
+                    // onKeyPress = {search}
+
+                />
+        <h3>Na, Cl, Albumin are required for Metabolic Acidosis Diagnosis</h3>
+        <input
+            type="number"
+            className="input"
+            placeholder="Na Value (mmol/l)"
+            // value={query}
+            // onChange={(e) => setQuery(e.target.value)}
+            // onKeyPress = {search}
+
+        />
+        <input
+            type="number"
+            className="input"
+            placeholder="Cl Value (mmol/l)"
+            // value={query}
+            // onChange={(e) => setQuery(e.target.value)}
+            // onKeyPress = {search}
+
+        />
+        <input
+            type="number"
+            className="input"
+            placeholder="Albomin Value (g/l)"
+            // value={query}
+            // onChange={(e) => setQuery(e.target.value)}
+            // onKeyPress = {search}
+
+        />
+
+<label class="checkbox">
+      <input type="checkbox"/>
+      Chronic CO2 Retention 
+    </label>
+
+    <label class="checkbox">
+      <input type="checkbox"/>
+      Exacebration
+    </label>
+
+    <div class="field is-grouped">
+  <div class="control">
+    <button class="button is-link">Submit</button>
+  </div>
+  <div class="control">
+    <button class="button is-link is-light">Cancel</button>
+  </div>
+</div>
+<div class="field">
+  <label class="label">Name</label>
+  <div class="control">
+    <input class="input" type="text" placeholder="Text input"/>
+  </div>
+</div>
+    </div>
