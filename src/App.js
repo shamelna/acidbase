@@ -67,9 +67,16 @@ const [highContrast, setHighContrast] = useState(false);
 const [largeText, setLargeText] = useState(false);
 const [savedCases, setSavedCases] = useState([]);
 const [showHistory, setShowHistory] = useState(false);
-const [expandedSections, setExpandedSections] = useState({});
+const [expandedSections, setExpandedSections] = useState({
+  understanding: false,
+  howItWorks: false,
+  about: false
+});
+const [headerHidden, setHeaderHidden] = useState(false);
+const [lastScrollY, setLastScrollY] = useState(0);
+const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+const [deferredPrompt, setDeferredPrompt] = useState(null);
 const diagnosisRef = useRef(null);
-//const [Exac, setExac] = useState('');
 let Exac;
 let CCo2;
 let pHc;
@@ -137,37 +144,111 @@ const loadCase = (caseData) => {
 };
 
 const exportToPDF = () => {
+  const isNormal = input.includes('Normal');
+  const isAcidosis = input.includes('Acidosis');
+  const isAlkalosis = input.includes('Alkalosis');
+  const isCompensated = input.includes('Compensated');
+  
+  let explanationContent = '';
+  
+  if (isNormal) {
+    explanationContent = `
+Understanding Your Diagnosis:
+=========================
+Normal Results: Your blood gas values fall within normal ranges, indicating proper acid-base balance.
+
+Clinical Implications:
+- Normal Acid-Base Status: No immediate intervention needed
+- Recommendations: Continue routine monitoring, maintain current ventilation and metabolic support
+- Consider anion gap calculation if metabolic concerns exist
+- Document as baseline for future comparisons
+- When to Recheck: If clinical status changes or new symptoms develop`;
+  } else if (isAcidosis) {
+    explanationContent = `
+Understanding Your Diagnosis:
+=========================
+Acidosis: Blood pH is below normal range (<7.35), indicating excess acid.
+
+Types:
+- Respiratory Acidosis: High PaCO2 (>45) from poor ventilation
+- Metabolic Acidosis: Low HCO3 (<22) from acid accumulation or bicarbonate loss
+- Mixed Acidosis: Both respiratory and metabolic components
+
+Clinical Implications:
+- Consider: Oxygen therapy, ventilation support, or bicarbonate administration
+- Urgent if: pH <7.2 or severe respiratory distress`;
+  } else if (isAlkalosis) {
+    explanationContent = `
+Understanding Your Diagnosis:
+=========================
+Alkalosis: Blood pH is above normal range (>7.45), indicating excess base.
+
+Types:
+- Respiratory Alkalosis: Low PaCO2 (<35) from hyperventilation
+- Metabolic Alkalosis: High HCO3 (>28) from base excess or acid loss
+- Mixed Alkalosis: Both respiratory and metabolic components
+
+Clinical Implications:
+- Consider: Address underlying cause, monitor electrolytes, cautious fluid management
+- Urgent if: pH >7.6 or neurological symptoms`;
+  }
+  
+  if (isCompensated) {
+    explanationContent += `
+
+Compensation:
+=============
+Body is attempting to normalize pH through secondary mechanisms.
+- Respiratory Compensation: Lungs adjust CO2 levels to correct metabolic issues
+- Metabolic Compensation: Kidneys retain/produce bicarbonate to correct respiratory issues
+- Complete Compensation: pH normalized but underlying disorder persists`;
+  }
+
   const content = `
-Acid Base Diagnosis Report
-========================
-Date: ${new Date().toLocaleString()}
+╔══════════════════════════════════════════════════════════════╗
+║                    ACID BASE MEDICAL DIAGNOSIS REPORT                ║
+╚══════════════════════════════════════════════════════════════╝
 
-Input Values:
-- pH: ${pH}
-- PaCO2: ${pv} mm Hg
-- HCO3: ${hv} mmol/l
-- Na: ${nav} mmol/l
-- Cl: ${clv} mmol/l
-- Albumin: ${albuminv} g/l
-- K: ${K} mmol/l
-- Ca: ${Ca} mmol/l
-- Mg: ${Mg} mmol/l
-- Lactate: ${Lactate} mmol/l
-- PO4: ${PO4} mmol/l
-- STD Base Deficit: ${SBD} mmol/l
+Generated: ${new Date().toLocaleString()}
+Patient: _________________________    MRN: _________________________
 
-Diagnosis:
+═══════════════════════════════════════════════════════════════
+                          INPUT VALUES
+═══════════════════════════════════════════════════════════════
+
+  pH:     ${pH} (Normal: 7.35-7.45)
+  PaCO2:  ${pv} mm Hg (Normal: 35-45)
+  HCO3:   ${hv} mmol/l (Normal: 22-28)
+  Na:     ${nav} mmol/l (Normal: 135-145)
+  Cl:     ${clv} mmol/l (Normal: 95-105)
+  Albumin: ${albuminv} g/l (Normal: 35-50)
+
+═══════════════════════════════════════════════════════════════
+                           DIAGNOSIS
+═══════════════════════════════════════════════════════════════
+
 ${input}
 
-SIG/EDB Gap:
-${CalcSEtext}
+${explanationContent}
+
+═══════════════════════════════════════════════════════════════
+                         CLINICAL NOTES
+═══════════════════════════════════════════════════════════════
+
+_______________________________________________________________________
+Physician Signature: _________________________    Date: _______________
+_______________________________________________________________________
+
+
+This report was generated by Acid Base Medical Diagnosis App
+For educational and clinical reference purposes only.
   `;
   
   const blob = new Blob([content], { type: 'text/plain' });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `acid-base-diagnosis-${Date.now()}.txt`;
+  a.download = `acid-base-diagnosis-${new Date().toISOString().split('T')[0]}.txt`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -188,6 +269,78 @@ useEffect(() => {
     setSavedCases(JSON.parse(saved));
   }
 }, []);
+
+// Handle scroll behavior for mobile header
+useEffect(() => {
+  const handleScroll = () => {
+    const currentScrollY = window.scrollY;
+    
+    if (currentScrollY > lastScrollY && currentScrollY > 100) {
+      // Scrolling down and past 100px - hide header
+      setHeaderHidden(true);
+    } else {
+      // Scrolling up or near top - show header
+      setHeaderHidden(false);
+    }
+    
+    setLastScrollY(currentScrollY);
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  
+  return () => {
+    window.removeEventListener('scroll', handleScroll);
+  };
+}, [lastScrollY]);
+
+// Handle PWA install prompt
+useEffect(() => {
+  const handleBeforeInstallPrompt = (e) => {
+    // Prevent the mini-infobar from appearing on mobile
+    e.preventDefault();
+    // Stash the event so it can be triggered later
+    setDeferredPrompt(e);
+    // Show the install banner
+    setShowInstallPrompt(true);
+  };
+
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  
+  // Check if app is already installed
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    setShowInstallPrompt(false);
+  }
+
+  return () => {
+    window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  };
+}, []);
+
+const handleInstallClick = async () => {
+  if (!deferredPrompt) return;
+  
+  // Show the install prompt
+  deferredPrompt.prompt();
+  
+  // Wait for the user to respond to the prompt
+  const { outcome } = await deferredPrompt.userChoice;
+  
+  if (outcome === 'accepted') {
+    console.log('User accepted the install prompt');
+  } else {
+    console.log('User dismissed the install prompt');
+  }
+  
+  // Clear the deferred prompt
+  setDeferredPrompt(null);
+  setShowInstallPrompt(false);
+};
+
+const dismissInstallPrompt = () => {
+  setShowInstallPrompt(false);
+  // Don't show again for this session
+  sessionStorage.setItem('installPromptDismissed', 'true');
+};
 const solve = () =>{
     setIsLoading(true);
     
@@ -504,7 +657,34 @@ function metalk() {
   }
   return (
 <div className={`container fade-in-up ${highContrast ? 'high-contrast' : ''} ${largeText ? 'large-text' : ''}`}> 
-<div className="header">
+
+{/* PWA Install Prompt */}
+{showInstallPrompt && !sessionStorage.getItem('installPromptDismissed') && (
+  <div className="install-prompt">
+    <div className="install-prompt-content">
+      <div className="install-prompt-text">
+        <strong>Install Acid Base App</strong>
+        <p>Add this medical tool to your home screen for quick access</p>
+      </div>
+      <div className="install-prompt-actions">
+        <button 
+          onClick={handleInstallClick}
+          className="btn-primary btn-sm"
+        >
+          Install
+        </button>
+        <button 
+          onClick={dismissInstallPrompt}
+          className="btn-secondary btn-sm"
+        >
+          Dismiss
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+<div className={`header ${headerHidden ? 'hidden' : ''}`}>
 <div className="text-center">
 <div className="flex justify-center items-center mb-2">
   {MedicalIcons.logo}
@@ -960,8 +1140,38 @@ function metalk() {
     {/* Primary Diagnosis Badge - Prominent Display */}
     {input && (
       <div className="diagnosis-result-main">
-        <div className={`status-badge status-badge-large ${input.includes('Normal') ? 'status-normal' : input.includes('Acidosis') || input.includes('Alkalosis') ? 'status-warning' : 'status-critical'}`}>
-          {input.includes('Normal') ? 'NORMAL' : input.includes('Acidosis') ? 'ACIDOSIS' : input.includes('Alkalosis') ? 'ALKALOSIS' : 'ABNORMAL'}
+        <div className={`diagnosis-card ${input.includes('Normal') ? 'diagnosis-normal' : input.includes('Acidosis') ? 'diagnosis-acidosis' : input.includes('Alkalosis') ? 'diagnosis-alkalosis' : 'diagnosis-critical'}`}>
+          <div className="diagnosis-header">
+            <div className="diagnosis-icon">
+              {input.includes('Normal') ? MedicalIcons.heart : 
+               input.includes('Acidosis') ? <span className="warning-icon">⚠️</span> :
+               input.includes('Alkalosis') ? <span className="warning-icon">⚠️</span> :
+               <span className="critical-icon">🚨</span>}
+            </div>
+            <div className="diagnosis-title">
+              <h2 className="diagnosis-label">
+                {input.includes('Normal') ? 'NORMAL ACID-BASE STATUS' : 
+                 input.includes('Acidosis') ? 'ACIDOSIS DETECTED' : 
+                 input.includes('Alkalosis') ? 'ALKALOSIS DETECTED' : 'ABNORMAL FINDINGS'}
+              </h2>
+              <p className="diagnosis-subtitle">{input}</p>
+            </div>
+          </div>
+          
+          <div className="diagnosis-metrics">
+            <div className="metric-item">
+              <span className="metric-label">pH</span>
+              <span className={`metric-value ${getValueStatus(pH, 7.35, 7.45)}`}>{pH}</span>
+            </div>
+            <div className="metric-item">
+              <span className="metric-label">PaCO₂</span>
+              <span className={`metric-value ${getValueStatus(pv, 35, 45)}`}>{pv}</span>
+            </div>
+            <div className="metric-item">
+              <span className="metric-label">HCO₃⁻</span>
+              <span className={`metric-value ${getValueStatus(hv, 22, 28)}`}>{hv}</span>
+            </div>
+          </div>
         </div>
         
         {/* Detailed Diagnosis Text */}
@@ -1115,8 +1325,17 @@ function metalk() {
               <div className="text-sm space-y-3">
                 <div>
                   <strong>Step 1: pH Validation</strong>
-                  <p className="ml-4">Calculate expected pH using Henderson-Hasselbalch equation: pH = 6.1 + log10([HCO3]/(0.03×PaCO2))</p>
-                  <p className="ml-4">If calculated pH differs &gt;0.1 from measured pH → Review input values</p>
+                  <div className="equation-box mt-2">
+                    <div className="equation-title">Henderson-Hasselbalch Equation:</div>
+                    <div className="equation-formula">
+                      pH = 6.1 + log₁₀(<span className="equation-fraction"><span className="numerator">[HCO₃⁻]</span><span className="denominator">0.03 × PaCO₂</span></span>)
+                    </div>
+                    <div className="equation-explanation mt-2">
+                      <span className="equation-variable">HCO₃⁻</span> = Bicarbonate (mmol/l)<br/>
+                      <span className="equation-variable">PaCO₂</span> = Partial pressure of CO₂ (mm Hg)
+                    </div>
+                  </div>
+                  <p className="ml-4 mt-3">If calculated pH differs &gt;0.1 from measured pH → Review input values</p>
                 </div>
                 
                 <div>

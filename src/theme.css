@@ -621,12 +621,281 @@ body {
   --text-5xl: 3.75rem;
 }
 
+/* Equation Formatting */
+.equation-box {
+  background: var(--light-gray);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-3) 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.equation-title {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-base);
+}
+
+.equation-formula {
+  font-family: 'Courier New', monospace;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--dark-color);
+  background: var(--white);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--primary-color);
+  line-height: 1.6;
+}
+
+.equation-fraction {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 var(--space-1);
+}
+
+.numerator {
+  border-bottom: 2px solid var(--dark-color);
+  padding: 0 var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.denominator {
+  padding: 0 var(--space-2);
+  color: var(--secondary-color);
+}
+
+.equation-explanation {
+  font-size: var(--text-sm);
+  color: var(--secondary-color);
+  background: var(--light-blue);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-2);
+}
+
+.equation-variable {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-family: 'Courier New', monospace;
+}
+
+/* Enhanced Diagnosis Card Design */
+.diagnosis-card {
+  background: linear-gradient(135deg, var(--white), var(--light-gray));
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-xl);
+  border: 2px solid;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.diagnosis-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.diagnosis-normal {
+  border-color: var(--success-color);
+}
+
+.diagnosis-normal::before {
+  background: linear-gradient(90deg, var(--success-color), #22c55e);
+}
+
+.diagnosis-acidosis {
+  border-color: var(--warning-color);
+}
+
+.diagnosis-acidosis::before {
+  background: linear-gradient(90deg, var(--warning-color), #f59e0b);
+}
+
+.diagnosis-alkalosis {
+  border-color: var(--info-color);
+}
+
+.diagnosis-alkalosis::before {
+  background: linear-gradient(90deg, var(--info-color), #3b82f6);
+}
+
+.diagnosis-critical {
+  border-color: var(--danger-color);
+}
+
+.diagnosis-critical::before {
+  background: linear-gradient(90deg, var(--danger-color), #ef4444);
+}
+
+.diagnosis-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.diagnosis-icon {
+  font-size: 3rem;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--light-gray);
+  border-radius: 50%;
+  box-shadow: var(--shadow-md);
+}
+
+.warning-icon {
+  font-size: 2.5rem;
+}
+
+.critical-icon {
+  font-size: 2.5rem;
+}
+
+.diagnosis-title {
+  flex: 1;
+}
+
+.diagnosis-label {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  margin: 0 0 var(--space-2) 0;
+  color: var(--dark-color);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.diagnosis-subtitle {
+  font-size: var(--text-lg);
+  color: var(--secondary-color);
+  margin: 0;
+  font-weight: 500;
+}
+
+.diagnosis-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.metric-item {
+  text-align: center;
+  padding: var(--space-3);
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.metric-label {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--secondary-color);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+.metric-value {
+  display: block;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--dark-color);
+}
+
+.metric-value.normal {
+  color: var(--success-color);
+}
+
+.metric-value.warning {
+  color: var(--warning-color);
+}
+
+.metric-value.critical {
+  color: var(--danger-color);
+}
+
+/* PWA Install Prompt */
+.install-prompt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: var(--white);
+  padding: var(--space-3);
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+}
+
+.install-prompt-content {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.install-prompt-text strong {
+  display: block;
+  font-size: var(--text-base);
+  margin-bottom: var(--space-1);
+}
+
+.install-prompt-text p {
+  margin: 0;
+  font-size: var(--text-sm);
+  opacity: 0.9;
+}
+
+.install-prompt-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.btn-sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+
 /* Mobile Optimizations */
 @media (max-width: 768px) {
+  .install-prompt-content {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-3);
+  }
+  
+  .install-prompt-actions {
+    justify-content: center;
+  }
+  
   .header {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
+    transform: translateY(0);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .header.hidden {
+    transform: translateY(-100%);
   }
   
   .form-section {
