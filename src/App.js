@@ -1030,6 +1030,7 @@ function metalk() {
                       <li>PaCO2: {pv} mm Hg (Normal: 35-45)</li>
                       <li>HCO3: {hv} mmol/l (Normal: 22-28)</li>
                     </ul>
+                    <p className="mt-2"><strong>Clinical Significance:</strong> No acid-base disorder detected. All values are within normal limits.</p>
                   </div>
                 )}
                 {input.includes('Acidosis') && (
@@ -1067,7 +1068,17 @@ function metalk() {
               <h5 className="font-semibold mt-4 mb-2">Clinical Implications</h5>
               <div className="text-sm">
                 {input.includes('Normal') && (
-                  <p>✅ No immediate acid-base intervention needed. Monitor for changes.</p>
+                  <div>
+                    <p>✅ <strong>Normal Acid-Base Status:</strong> No immediate intervention needed.</p>
+                    <p className="mt-2"><strong>Recommendations:</strong></p>
+                    <ul className="ml-4 mt-1">
+                      <li>Continue routine monitoring</li>
+                      <li>Maintain current ventilation and metabolic support</li>
+                      <li>Consider anion gap calculation if metabolic concerns exist</li>
+                      <li>Document as baseline for future comparisons</li>
+                    </ul>
+                    <p className="mt-2"><strong>When to Recheck:</strong> If clinical status changes or new symptoms develop.</p>
+                  </div>
                 )}
                 {input.includes('Acidosis') && (
                   <div>

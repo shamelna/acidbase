@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/acidbase/static/css/main.7e11762c.css",
-    "main.js": "/acidbase/static/js/main.9c90f9da.js",
+    "main.js": "/acidbase/static/js/main.98293749.js",
     "static/js/453.4458fe77.chunk.js": "/acidbase/static/js/453.4458fe77.chunk.js",
     "index.html": "/acidbase/index.html",
     "main.7e11762c.css.map": "/acidbase/static/css/main.7e11762c.css.map",
-    "main.9c90f9da.js.map": "/acidbase/static/js/main.9c90f9da.js.map",
+    "main.98293749.js.map": "/acidbase/static/js/main.98293749.js.map",
     "453.4458fe77.chunk.js.map": "/acidbase/static/js/453.4458fe77.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.7e11762c.css",
-    "static/js/main.9c90f9da.js"
+    "static/js/main.98293749.js"
   ]
 }
