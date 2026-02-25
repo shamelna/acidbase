@@ -502,7 +502,7 @@ function metalk() {
   }
   return (
 <div className={`container fade-in-up ${highContrast ? 'high-contrast' : ''} ${largeText ? 'large-text' : ''}`}> 
-<div className="header sticky-header">
+<div className="header">
 <div className="text-center">
 <div className="flex justify-center items-center mb-2">
   {MedicalIcons.logo}

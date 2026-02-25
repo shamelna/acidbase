@@ -1,6 +1,6 @@
 {
-  "short_name": "Acid Base Dx",
-  "name": "Acid Base Medical Diagnosis - Professional Healthcare Tool",
+  "short_name": "React App",
+  "name": "Create React App Sample",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,7 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#12385b",
-  "background_color": "#ffffff",
-  "description": "Professional acid-base diagnosis tool for healthcare providers"
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
 }
