@@ -273,6 +273,7 @@ const CalcSE = () =>{
 
 
                     Diag = "Normal, Check Anion Gap";
+                    displayDiag(Diag);
                     
                 }
             }
@@ -295,7 +296,7 @@ const CalcSE = () =>{
         }
 //////////////////
 
-        if (Diag === "" && pH < 7.4) {
+        if (Diag === "" && pH < 7.35) {
             Diag = " Acidosis";
             //Log.i("MainActivity.java", "Resp" + Diag);
             //if (pv>=p2&&hv>=h1)
@@ -312,7 +313,7 @@ const CalcSE = () =>{
 
 
         }
-        else if (pH >= 7.4) {
+        else if (Diag === "" && pH > 7.45) {
           console.log(">=7.4");
             if (CCo2 === 0) {
               console.log(">=7.4 Alk");
