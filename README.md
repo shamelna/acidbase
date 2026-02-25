@@ -40,8 +40,8 @@ A professional React-based web application for healthcare providers to analyze a
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/YOUR_USERNAME/acid-base-diagnosis.git
-cd acid-base-diagnosis
+git clone https://github.com/shamelna/acidbase.git
+cd acidbase
 ```
 
 2. Install dependencies:
