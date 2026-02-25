@@ -536,6 +536,125 @@ function metalk() {
 </div>
 </div>  
 
+{/* About Section */}
+<div className="form-section card-enhanced">
+  <div className="flex justify-between items-center mb-4">
+    <h3 className="text-xl font-semibold">{MedicalIcons.lab} About Acid Base Diagnosis</h3>
+    <button 
+      className="expandable-trigger"
+      onClick={() => toggleSection('about')}
+    >
+      <span className={`expandable-icon ${expandedSections.about ? 'expanded' : ''}`}>▼</span>
+    </button>
+  </div>
+  
+  <div className={`expandable-content ${expandedSections.about ? 'open' : ''}`}>
+    <div className="about-content">
+      <div className="about-intro mb-6">
+        <p className="text-base leading-relaxed">
+          This professional Acid Base Medical Diagnosis tool is designed for healthcare providers to quickly and accurately analyze arterial blood gas (ABG) values and interpret acid-base disorders.
+        </p>
+      </div>
+
+      <div className="about-resources mb-6">
+        <h4 className="text-lg font-semibold mb-3">📚 Educational Resources</h4>
+        <div className="resource-links space-y-3">
+          <div className="resource-item">
+            <h5 className="font-medium mb-2">📖 Complete Medical Guide</h5>
+            <p className="text-sm text-secondary mb-2">
+              Comprehensive PDF documentation covering acid-base physiology, clinical applications, and case studies.
+            </p>
+            <a 
+              href="https://drive.google.com/file/d/1-YRwh_9Vd2FvWdmzjUpLMSadsuRv52eV/edit"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary"
+            >
+              📄 View Medical Guide PDF
+            </a>
+          </div>
+
+          <div className="resource-item">
+            <h5 className="font-medium mb-2">🎯 Diagnosis Algorithm</h5>
+            <p className="text-sm text-secondary mb-2">
+              Step-by-step PowerPoint presentation showing the complete diagnostic algorithm and decision trees.
+            </p>
+            <a 
+              href="https://drive.google.com/file/d/1UgsqSMKz26DN8JXzpNqevFyvEthrhH0L/edit"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary"
+            >
+              📊 View Algorithm Presentation
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div className="about-features mb-6">
+        <h4 className="text-lg font-semibold mb-3">🔬 Key Features</h4>
+        <div className="features-grid">
+          <div className="feature-item">
+            <div className="feature-icon">{MedicalIcons.stethoscope}</div>
+            <div className="feature-text">
+              <h5 className="font-medium">Real-time Analysis</h5>
+              <p className="text-sm text-secondary">Instant ABG interpretation with clinical implications</p>
+            </div>
+          </div>
+          <div className="feature-item">
+            <div className="feature-icon">{MedicalIcons.heart}</div>
+            <div className="feature-text">
+              <h5 className="font-medium">Educational Content</h5>
+              <p className="text-sm text-secondary">Detailed explanations of diagnosis logic</p>
+            </div>
+          </div>
+          <div className="feature-item">
+            <div className="feature-icon">{MedicalIcons.lab}</div>
+            <div className="feature-text">
+              <h5 className="font-medium">Advanced Calculations</h5>
+              <p className="text-sm text-secondary">SIG, BDE Gap, and Anion Gap with albumin correction</p>
+            </div>
+          </div>
+          <div className="feature-item">
+            <div className="feature-icon">{MedicalIcons.settings}</div>
+            <div className="feature-text">
+              <h5 className="font-medium">Professional Design</h5>
+              <p className="text-sm text-secondary">Medical-themed interface with accessibility features</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="about-medical-accuracy">
+        <h4 className="text-lg font-semibold mb-3">⚕️ Medical Accuracy</h4>
+        <div className="accuracy-info">
+          <p className="text-sm mb-3">
+            This application follows established medical guidelines and incorporates evidence-based calculations:
+          </p>
+          <ul className="text-sm space-y-1 ml-4">
+            <li>• <strong>Henderson-Hasselbalch Equation</strong> for pH validation</li>
+            <li>• <strong>Compensation Ratios</strong> (Acute: 1:10, Chronic: 1:4)</li>
+            <li>• <strong>Anion Gap</strong> with albumin correction formula</li>
+            <li>• <strong>Reference Ranges</strong> based on clinical laboratory standards</li>
+            <li>• <strong>Clinical Guidelines</strong> from current medical literature</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="about-disclaimer mt-6">
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-xs font-semibold text-yellow-800 mb-2">
+            ⚠️ Medical Disclaimer
+          </p>
+          <p className="text-xs text-yellow-700">
+            This tool provides educational support for healthcare professionals. Always use clinical judgment and consider full patient context. Not a substitute for medical training, professional consultation, or institutional protocols.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {/* History Panel */}
 {showHistory && (
   <div className="form-section slide-in-up">
