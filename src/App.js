@@ -920,7 +920,7 @@ function metalk() {
         handleSolve={solve} 
         className={`btn-primary ${isLoading ? 'loading' : ''}`}
       >
-        {isLoading ? 'Analyzing...' : 'Submit Diagnosis'}
+        {isLoading ? 'Analyzing...' : 'Diagnose'}
       </DiagButton>
     </div>
     <div className="column">
