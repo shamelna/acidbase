@@ -508,8 +508,30 @@ const CalcSE = () => {
     
     // All values are present, perform calculation
     console.log("SIG");
-    Calc_SIG = nav + Ca + Mg + K - (clv + Lactate) - (hv + albuminv * (0.123 * pH - 0.631) + PO4 * (0.309 * pH - 0.469));
-    Calc_BDE = -1 * SBD - (nav - clv - 38) + 0.25 * (42 - albuminv);
+    
+    // Convert all values to numbers and handle NaN
+    const numK = parseFloat(K) || 0;
+    const numCa = parseFloat(Ca) || 0;
+    const numMg = parseFloat(Mg) || 0;
+    const numLactate = parseFloat(Lactate) || 0;
+    const numPO4 = parseFloat(PO4) || 0;
+    const numNav = parseFloat(nav) || 0;
+    const numClv = parseFloat(clv) || 0;
+    const numHv = parseFloat(hv) || 0;
+    const numAlbuminv = parseFloat(albuminv) || 0;
+    const numPH = parseFloat(pH) || 0;
+    const numSBD = parseFloat(SBD) || 0;
+    
+    // Calculate SIG with NaN protection
+    Calc_SIG = numNav + numCa + numMg + numK - (numClv + numLactate) - (numHv + numAlbuminv * (0.123 * numPH - 0.631) + numPO4 * (0.309 * numPH - 0.469));
+    Calc_BDE = -1 * numSBD - (numNav - numClv - 38) + 0.25 * (42 - numAlbuminv);
+    
+    // Check if results are valid numbers
+    if (isNaN(Calc_SIG) || isNaN(Calc_BDE)) {
+      setCalcSEtext("Error: Invalid calculation. Please check all input values.");
+      setIsLoading(false);
+      return;
+    }
     
     if (Calc_SIG > 2) {
       checknormal = " (Abnormal Anion)";
@@ -1206,28 +1228,10 @@ function metalk() {
     </div>
     <div className="column">
       <button 
-        className="btn-secondary"
-        onClick={() => {
-          setpH('7.40');
-          setPaCo2('40');
-          setHCO3('24');
-          setNa('140');
-          setCl('100');
-          setAlbumin('40');
-          setK('4.0');
-          setCa('2.3');
-          setMg('0.8');
-          setLactate('1.5');
-          setPO4('1.0');
-          setSBD('0');
-          setCheckCCo2(false);
-          setCheckExac(false);
-          setUrc('');
-          setInput('');
-          setCalcSEtext('');
-        }}
+        className="btn-danger"
+        onClick={clearAllValues}
       >
-        Reset to Normal
+        Clear All Values
       </button>
     </div>
   </div>
