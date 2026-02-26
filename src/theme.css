@@ -684,6 +684,23 @@ body {
   font-family: 'Courier New', monospace;
 }
 
+/* Accessibility Controls */
+.accessibility-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.history-coming-soon {
+  font-size: var(--text-sm);
+  color: var(--secondary-color);
+  font-style: italic;
+  opacity: 0.8;
+  margin-left: var(--space-2);
+}
+
 /* Enhanced Diagnosis Card Design */
 .diagnosis-card {
   background: linear-gradient(135deg, var(--white), var(--light-gray));

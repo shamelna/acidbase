@@ -695,26 +695,21 @@ function metalk() {
 
 {/* Accessibility Controls */}
 <div className="text-center mt-4">
-  <button 
-    onClick={() => setHighContrast(!highContrast)}
-    className={`btn-secondary ${highContrast ? 'bg-accent text-white' : ''} mx-2`}
-  >
-    {MedicalIcons.settings} High Contrast
-  </button>
-  <button 
-    onClick={() => setLargeText(!largeText)}
-    className={`btn-secondary ${largeText ? 'bg-accent text-white' : ''} mx-2`}
-  >
-    Large Text
-  </button>
-  <button 
-    onClick={() => {
-      alert('History feature coming soon! This will allow you to save and load patient cases for future reference.');
-    }}
-    className="btn-secondary mx-2"
-  >
-    {MedicalIcons.heart} History (Coming Soon)
-  </button>
+  <div className="accessibility-controls">
+    <button 
+      onClick={() => setHighContrast(!highContrast)}
+      className={`btn-secondary ${highContrast ? 'bg-accent text-white' : ''} mx-2`}
+    >
+      {MedicalIcons.settings} High Contrast
+    </button>
+    <button 
+      onClick={() => setLargeText(!largeText)}
+      className={`btn-secondary ${largeText ? 'bg-accent text-white' : ''} mx-2`}
+    >
+      Large Text
+    </button>
+    <span className="history-coming-soon">History (Coming Soon)</span>
+  </div>
 </div>
 </div>  
 
