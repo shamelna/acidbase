@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import { useState, useEffect } from 'react';
 import DiagButton from './DiagButton'
 
 //import logo from './logo.svg';
@@ -76,7 +76,6 @@ const [headerHidden, setHeaderHidden] = useState(false);
 const [lastScrollY, setLastScrollY] = useState(0);
 const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 const [deferredPrompt, setDeferredPrompt] = useState(null);
-const diagnosisRef = useRef(null);
 let Exac;
 let CCo2;
 let pHc;
@@ -143,7 +142,7 @@ const loadCase = (caseData) => {
   alert('Load functionality coming soon! This feature will allow you to load previously saved patient cases.');
 };
 
-const exportToPDF = () => {
+const exportToText = () => {
   const isNormal = input.includes('Normal');
   const isAcidosis = input.includes('Acidosis');
   const isAlkalosis = input.includes('Alkalosis');
@@ -1168,17 +1167,6 @@ function metalk() {
           </div>
         </div>
         
-        {/* Detailed Diagnosis Text */}
-        <div className="diagnosis-text mt-4">
-          <textarea 
-            ref={diagnosisRef}
-            className="textarea diagnosis-textarea" 
-            value={input} 
-            placeholder="Diagnosis results will appear here..."
-            readOnly
-          ></textarea>
-        </div>
-        
         {/* Action Buttons */}
         <div className="diagnosis-actions mt-4">
           <div className="flex gap-2 flex-wrap">
@@ -1196,7 +1184,7 @@ function metalk() {
               Save (Coming Soon)
             </button>
             <button 
-              onClick={exportToPDF}
+              onClick={exportToText}
               className="export-btn"
             >
               Export
