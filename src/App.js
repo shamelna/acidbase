@@ -161,24 +161,22 @@ const loadCase = (caseData) => {
 };
 
 const clearAllValues = () => {
-  // Clear all input values
-  setpH('7.40');
-  setPaCo2('40');
-  setHCO3('24');
-  setNa('140');
-  setCl('100');
-  setAlbumin('40');
-  setK('4.0');
-  setCa('2.3');
-  setMg('0.8');
-  setLactate('1.5');
-  setPO4('1.0');
-  setSBD('0');
-  setUrc('');
+  // Clear all input values - Final version with rich SIG formatting
+  setpH('');
+  setPaCo2('');
+  setHCO3('');
+  setNa('');
+  setCl('');
+  setAlbumin('');
+  setK('');
+  setCa('');
+  setMg('');
+  setLactate('');
+  setPO4('');
+  setSBD('');
   setCalcSEtext('');
   setInput('');
-  setCheckCCo2(false);
-  setCheckExac(false);
+  setCopied(false);
 };
 
 const exportToPDF = async () => {
@@ -1255,12 +1253,13 @@ function metalk() {
 </div>
 
 <div className={`form-section card-enhanced ${input ? 'slide-in-up' : ''}`}>
-  {/* Clear Diagnosis Results Header */}
+  {/* Diagnosis Results Header */}
   <div className="diagnosis-header">
     <h3 className="text-xl font-semibold mb-2">{MedicalIcons.stethoscope} Diagnosis Results</h3>
-    
-    {/* Primary Diagnosis Badge - Prominent Display */}
-    {input && (
+  </div>
+  
+  {/* Primary Diagnosis Badge - Prominent Display */}
+  {input && (
       <div className="diagnosis-result-main">
         <div className={`diagnosis-card ${input.includes('Normal') ? 'diagnosis-normal' : input.includes('Acidosis') ? 'diagnosis-acidosis' : input.includes('Alkalosis') ? 'diagnosis-alkalosis' : 'diagnosis-critical'}`}>
           <div className="diagnosis-header">
@@ -1700,12 +1699,44 @@ function metalk() {
       </button>
     )}
   </div>
-  <textarea 
-    className="textarea" 
-    value={CalcSEtext} 
-    placeholder="SIG / EDB Gap results will appear here..."
-    readOnly
-  ></textarea>
+  {/* Rich SIG/EDB Gap Results Display */}
+  {CalcSEtext && CalcSEtext.includes('SIG=') ? (
+    <div className="sig-results-rich">
+      {CalcSEtext.split('\n').map((line, index) => {
+        if (line.includes('SIG=')) {
+          const sigValue = line.split('=')[1];
+          const isAbnormal = line.includes('Abnormal');
+          return (
+            <div key={index} className={`sig-result-item ${isAbnormal ? 'sig-abnormal' : 'sig-normal'}`}>
+              <div className="sig-label">
+                <span className="sig-icon">{isAbnormal ? '⚠️' : '✅'}</span>
+                <span className="sig-title">Strong Ion Gap (SIG)</span>
+              </div>
+              <div className="sig-value">{sigValue}</div>
+            </div>
+          );
+        } else if (line.includes('BDE Gap=')) {
+          const bdeValue = line.split('=')[1];
+          return (
+            <div key={index} className="sig-result-item sig-bde">
+              <div className="sig-label">
+                <span className="sig-icon">📊</span>
+                <span className="sig-title">Base Deficit Excess (BDE) Gap</span>
+              </div>
+              <div className="sig-value">{bdeValue}</div>
+            </div>
+          );
+        }
+        return null;
+      })}
+    </div>
+  ) : (
+    <div className="sig-placeholder">
+      <div className="sig-placeholder-icon">🧮</div>
+      <p>SIG / EDB Gap results will appear here...</p>
+      <p className="text-sm text-secondary">Complete all required values and click Calculate SIG / EDB Gap</p>
+    </div>
+  )}
   {CalcSEtext && CalcSEtext.includes('Abnormal') && (
     <div className="mt-4">
       <div className="status-critical">
@@ -1714,8 +1745,7 @@ function metalk() {
     </div>
   )}
 </div>
-</div>
-</div>
+  </div>
 </div>
 
   )
