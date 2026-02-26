@@ -836,26 +836,22 @@ function metalk() {
 <div className={`header ${headerHidden ? 'hidden' : ''}`}>
 <div className="text-center">
 <div className="flex justify-center items-center mb-2">
-  {MedicalIcons.logo}
+  <a href="/" className="flex justify-center items-center mb-2" style={{textDecoration: 'none', color: 'inherit'}}>
+    {MedicalIcons.logo}
+  </a>
   <h1 className="text-4xl font-bold ml-4">ACID BASE MEDICAL DIAGNOSIS</h1>
 </div>
 <h2 className="text-xl font-normal">Kaizen Made Easy - Professional Medical Tool</h2>
 </div>
-
 {/* Accessibility Controls */}
 <div className="text-center mt-4">
   <div className="accessibility-controls">
     <button 
       onClick={() => setHighContrast(!highContrast)}
-      className={`btn-secondary ${highContrast ? 'bg-accent text-white' : ''} mx-2`}
+      className="btn-secondary"
+      aria-label="Toggle high contrast mode"
     >
-      {MedicalIcons.settings} High Contrast
-    </button>
-    <button 
-      onClick={() => setLargeText(!largeText)}
-      className={`btn-secondary ${largeText ? 'bg-accent text-white' : ''} mx-2`}
-    >
-      Large Text
+      {highContrast ? 'Normal Contrast' : 'High Contrast'}
     </button>
     <span className="history-coming-soon">History (Coming Soon)</span>
   </div>
