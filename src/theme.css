@@ -996,6 +996,9 @@ body {
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition);
+  display: inline-block;
+  min-height: 44px;
+  font-size: var(--text-base);
 }
 
 .btn-danger:hover {
