@@ -139,8 +139,25 @@ const saveCase = () => {
 };
 
 const loadCase = (caseData) => {
-  // Coming soon - show notification instead
-  alert('Load functionality coming soon! This feature will allow you to load previously saved patient cases.');
+  try {
+    // Load case data into state
+    setpH(caseData.pH);
+    setPaCo2(caseData.PaCO2);
+    setHCO3(caseData.HCO3);
+    setNa(caseData.Na);
+    setCl(caseData.Cl);
+    setAlbumin(caseData.Albumin);
+    setK(caseData.K);
+    setCa(caseData.Ca);
+    setMg(caseData.Mg);
+    setLactate(caseData.Lactate);
+    setPO4(caseData.PO4);
+    setSBD(caseData.SBD);
+    setInput(caseData.input);
+  } catch (error) {
+    console.error('Error loading case:', error);
+    alert('Error loading case. Please try again.');
+  }
 };
 
 const clearAllValues = () => {
