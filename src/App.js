@@ -466,34 +466,61 @@ const solve = () =>{
   }, 1000);
 }
 
-const CalcSE = () =>{
+const CalcSE = () => {
   setIsLoading(true);
   
   setTimeout(() => {
     setCalcSEtext("welcome");
-    //console.log(K);
-    if(K=== ""||Ca=== ""||Mg=== ""||Lactate===""||PO4=== ""||SBD===""||SBD<=0||nav===""||clv===""||albuminv===""||pH===""){
-      console.log(albuminv);
-      setCalcSEtext("Please provide K, Ca, Mg, Lactate, PO4, Na, Cl, Albumin and (+ve) STD Base Dificit values");
+    
+    // Check which values are missing and provide specific feedback
+    const missingValues = [];
+    const invalidValues = [];
+    
+    if (K === "" || K === null || K === undefined) missingValues.push("K");
+    if (Ca === "" || Ca === null || Ca === undefined) missingValues.push("Ca");
+    if (Mg === "" || Mg === null || Mg === undefined) missingValues.push("Mg");
+    if (Lactate === "" || Lactate === null || Lactate === undefined) missingValues.push("Lactate");
+    if (PO4 === "" || PO4 === null || PO4 === undefined) missingValues.push("PO4");
+    if (nav === "" || nav === null || nav === undefined) missingValues.push("Na");
+    if (clv === "" || clv === null || clv === undefined) missingValues.push("Cl");
+    if (albuminv === "" || albuminv === null || albuminv === undefined) missingValues.push("Albumin");
+    if (pH === "" || pH === null || pH === undefined) missingValues.push("pH");
+    if (SBD === "" || SBD === null || SBD === undefined) missingValues.push("STD Base Deficit");
+    if (SBD !== "" && SBD !== null && SBD !== undefined && (parseFloat(SBD) <= 0 || isNaN(parseFloat(SBD)))) {
+      invalidValues.push("STD Base Deficit must be positive");
+    }
+    
+    // Provide specific feedback about missing values
+    if (missingValues.length > 0 || invalidValues.length > 0) {
+      let errorMessage = "";
+      if (missingValues.length > 0) {
+        errorMessage = `Missing values: ${missingValues.join(", ")}`;
+      }
+      if (invalidValues.length > 0) {
+        if (errorMessage) errorMessage += "\n";
+        errorMessage += invalidValues.join(", ");
+      }
+      
+      setCalcSEtext(`Please provide the following required values:\n${errorMessage}`);
       setIsLoading(false);
       return;
-  }
-  else{
+    }
+    
+    // All values are present, perform calculation
     console.log("SIG");
-      Calc_SIG =nav+Ca+Mg+K-(clv+Lactate)-(hv+albuminv*(0.123*pH-0.631)+PO4*(0.309*pH-0.469));
-      Calc_BDE = -1*SBD-(nav-clv-38)+0.25*(42-albuminv);
-      
-      if (Calc_SIG>2){
-          checknormal = " (Abnormal Anion)";
-      }else 
-      {
-        checknormal = " (Normal Value)";
-      }
-      setCalcSEtext("SIG="+Number((Calc_SIG).toFixed(2))+checknormal+"\n"+"BDE Gap="+Number((Calc_BDE).toFixed(2))+"\n");
-      setIsLoading(false);
-  }
+    Calc_SIG = nav + Ca + Mg + K - (clv + Lactate) - (hv + albuminv * (0.123 * pH - 0.631) + PO4 * (0.309 * pH - 0.469));
+    Calc_BDE = -1 * SBD - (nav - clv - 38) + 0.25 * (42 - albuminv);
+    
+    if (Calc_SIG > 2) {
+      checknormal = " (Abnormal Anion)";
+    } else {
+      checknormal = " (Normal Value)";
+    }
+    
+    setCalcSEtext("SIG=" + Number((Calc_SIG).toFixed(2)) + checknormal + "\n" + "BDE Gap=" + Number((Calc_BDE).toFixed(2)) + "\n");
+    setIsLoading(false);
   }, 1000);
-}
+};
 
 
 
