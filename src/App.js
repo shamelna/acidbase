@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import DiagButton from './DiagButton'
+import DiagButton from './DiagButton';
+import jsPDF from 'jspdf';
 
 //import logo from './logo.svg';
 //import './App.css';
@@ -142,19 +143,96 @@ const loadCase = (caseData) => {
   alert('Load functionality coming soon! This feature will allow you to load previously saved patient cases.');
 };
 
-const exportToText = () => {
-  const isNormal = input.includes('Normal');
-  const isAcidosis = input.includes('Acidosis');
-  const isAlkalosis = input.includes('Alkalosis');
-  const isCompensated = input.includes('Compensated');
-  
-  let explanationContent = '';
-  
-  if (isNormal) {
-    explanationContent = `
-Understanding Your Diagnosis:
-=========================
-Normal Results: Your blood gas values fall within normal ranges, indicating proper acid-base balance.
+const exportToPDF = async () => {
+  try {
+    // Create new PDF document
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+    // Add custom font for better medical report appearance
+    pdf.setFontSize(20);
+    pdf.setTextColor(18, 56, 91); // Dark blue color matching app theme
+    
+    // Title
+    pdf.text('ACID BASE MEDICAL DIAGNOSIS REPORT', 105, 20, { align: 'center' });
+    
+    // Add line under title
+    pdf.setDrawColor(18, 56, 91);
+    pdf.setLineWidth(0.5);
+    pdf.line(20, 25, 190, 25);
+    
+    // Patient and generation info
+    pdf.setFontSize(12);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(`Generated: ${new Date().toLocaleString()}`, 20, 35);
+    pdf.text('Patient: _________________________    MRN: _________________________', 20, 45);
+    
+    // Input Values Section
+    pdf.setFontSize(14);
+    pdf.setTextColor(18, 56, 91);
+    pdf.text('INPUT VALUES', 20, 60);
+    
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(20, 62, 190, 62);
+    
+    pdf.setFontSize(11);
+    pdf.setTextColor(0, 0, 0);
+    const inputValues = [
+      `pH:     ${pH} (Normal: 7.35-7.45)`,
+      `PaCO2:  ${pv} mm Hg (Normal: 35-45)`,
+      `HCO3:   ${hv} mmol/l (Normal: 22-28)`,
+      `Na:     ${nav} mmol/l (Normal: 135-145)`,
+      `Cl:     ${clv} mmol/l (Normal: 95-105)`,
+      `Albumin: ${albuminv} g/l (Normal: 35-50)`
+    ];
+    
+    inputValues.forEach((value, index) => {
+      pdf.text(value, 25, 70 + (index * 7));
+    });
+    
+    // Diagnosis Section
+    const diagnosisY = 115;
+    pdf.setFontSize(14);
+    pdf.setTextColor(18, 56, 91);
+    pdf.text('DIAGNOSIS', 20, diagnosisY);
+    
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(20, diagnosisY + 2, 190, diagnosisY + 2);
+    
+    // Add diagnosis with icon
+    pdf.setFontSize(12);
+    let diagnosisText = input;
+    let icon = '';
+    let color = [0, 0, 0];
+    
+    if (input.includes('Normal')) {
+      icon = '✅ ';
+      color = [34, 197, 94]; // Green
+    } else if (input.includes('Acidosis')) {
+      icon = '⚠️ ';
+      color = [245, 158, 11]; // Orange
+    } else if (input.includes('Alkalosis')) {
+      icon = '⚠️ ';
+      color = [59, 130, 246]; // Blue
+    } else {
+      icon = '🚨 ';
+      color = [239, 68, 68]; // Red
+    }
+    
+    pdf.setTextColor(...color);
+    pdf.setFontSize(13);
+    pdf.setFont(undefined, 'bold');
+    pdf.text(icon + diagnosisText, 25, diagnosisY + 10);
+    
+    // Add explanation content
+    const isNormal = input.includes('Normal');
+    const isAcidosis = input.includes('Acidosis');
+    const isAlkalosis = input.includes('Alkalosis');
+    const isCompensated = input.includes('Compensated');
+    
+    let explanationContent = '';
+    
+    if (isNormal) {
+      explanationContent = `Normal Results: Your blood gas values fall within normal ranges, indicating proper acid-base balance.
 
 Clinical Implications:
 - Normal Acid-Base Status: No immediate intervention needed
@@ -162,11 +240,8 @@ Clinical Implications:
 - Consider anion gap calculation if metabolic concerns exist
 - Document as baseline for future comparisons
 - When to Recheck: If clinical status changes or new symptoms develop`;
-  } else if (isAcidosis) {
-    explanationContent = `
-Understanding Your Diagnosis:
-=========================
-Acidosis: Blood pH is below normal range (<7.35), indicating excess acid.
+    } else if (isAcidosis) {
+      explanationContent = `Acidosis: Blood pH is below normal range (<7.35), indicating excess acid.
 
 Types:
 - Respiratory Acidosis: High PaCO2 (>45) from poor ventilation
@@ -176,11 +251,8 @@ Types:
 Clinical Implications:
 - Consider: Oxygen therapy, ventilation support, or bicarbonate administration
 - Urgent if: pH <7.2 or severe respiratory distress`;
-  } else if (isAlkalosis) {
-    explanationContent = `
-Understanding Your Diagnosis:
-=========================
-Alkalosis: Blood pH is above normal range (>7.45), indicating excess base.
+    } else if (isAlkalosis) {
+      explanationContent = `Alkalosis: Blood pH is above normal range (>7.45), indicating excess base.
 
 Types:
 - Respiratory Alkalosis: Low PaCO2 (<35) from hyperventilation
@@ -190,68 +262,56 @@ Types:
 Clinical Implications:
 - Consider: Address underlying cause, monitor electrolytes, cautious fluid management
 - Urgent if: pH >7.6 or neurological symptoms`;
-  }
-  
-  if (isCompensated) {
-    explanationContent += `
+    }
+    
+    if (isCompensated) {
+      explanationContent += `
 
 Compensation:
-=============
 Body is attempting to normalize pH through secondary mechanisms.
 - Respiratory Compensation: Lungs adjust CO2 levels to correct metabolic issues
 - Metabolic Compensation: Kidneys retain/produce bicarbonate to correct respiratory issues
 - Complete Compensation: pH normalized but underlying disorder persists`;
+    }
+    
+    // Add explanation text
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(10);
+    pdf.setFont(undefined, 'normal');
+    
+    const splitExplanation = pdf.splitTextToSize(explanationContent, 160);
+    pdf.text(splitExplanation, 25, diagnosisY + 20);
+    
+    // Clinical Notes Section
+    const notesY = diagnosisY + 20 + (splitExplanation.length * 5) + 10;
+    
+    pdf.setFontSize(14);
+    pdf.setTextColor(18, 56, 91);
+    pdf.text('CLINICAL NOTES', 20, notesY);
+    
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(20, notesY + 2, 190, notesY + 2);
+    
+    pdf.setFontSize(10);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('_______________________________________________________________________', 20, notesY + 15);
+    pdf.text('Physician Signature: _________________________    Date: _______________', 20, notesY + 20);
+    pdf.text('_______________________________________________________________________', 20, notesY + 25);
+    
+    // Footer
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text('This report was generated by Acid Base Medical Diagnosis App', 105, 280, { align: 'center' });
+    pdf.text('Professional Medical Tool - Kaizen Made Easy', 105, 285, { align: 'center' });
+    pdf.text('For educational and clinical reference purposes only.', 105, 290, { align: 'center' });
+    
+    // Save the PDF
+    pdf.save(`acid-base-diagnosis-${new Date().toISOString().split('T')[0]}.pdf`);
+    
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    alert('Error generating PDF. Please try again.');
   }
-
-  const content = `
-╔══════════════════════════════════════════════════════════════╗
-║                    ACID BASE MEDICAL DIAGNOSIS REPORT                ║
-╚══════════════════════════════════════════════════════════════╝
-
-Generated: ${new Date().toLocaleString()}
-Patient: _________________________    MRN: _________________________
-
-═══════════════════════════════════════════════════════════════
-                          INPUT VALUES
-═══════════════════════════════════════════════════════════════
-
-  pH:     ${pH} (Normal: 7.35-7.45)
-  PaCO2:  ${pv} mm Hg (Normal: 35-45)
-  HCO3:   ${hv} mmol/l (Normal: 22-28)
-  Na:     ${nav} mmol/l (Normal: 135-145)
-  Cl:     ${clv} mmol/l (Normal: 95-105)
-  Albumin: ${albuminv} g/l (Normal: 35-50)
-
-═══════════════════════════════════════════════════════════════
-                           DIAGNOSIS
-═══════════════════════════════════════════════════════════════
-
-${input.includes('Normal') ? '✅ ' + input : input.includes('Acidosis') ? '⚠️ ' + input : input.includes('Alkalosis') ? '⚠️ ' + input : '🚨 ' + input}
-
-${explanationContent}
-
-═══════════════════════════════════════════════════════════════
-                         CLINICAL NOTES
-═══════════════════════════════════════════════════════════════
-
-_______________________________________________________________________
-Physician Signature: _________________________    Date: _______________
-_______________________________________________________________________
-
-This report was generated by Acid Base Medical Diagnosis App
-Professional Medical Tool - Kaizen Made Easy
-For educational and clinical reference purposes only.
-  `;
-  
-  const blob = new Blob([content], { type: 'text/plain' });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `acid-base-diagnosis-${new Date().toISOString().split('T')[0]}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
 };
 
 const toggleSection = (section) => {
@@ -1184,7 +1244,7 @@ function metalk() {
               Save (Coming Soon)
             </button>
             <button 
-              onClick={exportToText}
+              onClick={exportToPDF}
               className="export-btn"
             >
               Export
