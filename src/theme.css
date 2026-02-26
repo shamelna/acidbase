@@ -835,10 +835,11 @@ body {
   left: 0;
   right: 0;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: var(--white);
+  color: var(--white) !important;
   padding: var(--space-3);
   z-index: 1000;
   box-shadow: var(--shadow-lg);
+  border-bottom: 2px solid var(--accent-color);
 }
 
 .install-prompt-content {
@@ -854,17 +855,39 @@ body {
   display: block;
   font-size: var(--text-base);
   margin-bottom: var(--space-1);
+  color: var(--white) !important;
+  font-weight: 700;
 }
 
 .install-prompt-text p {
   margin: 0;
   font-size: var(--text-sm);
   opacity: 0.9;
+  color: var(--white) !important;
 }
 
 .install-prompt-actions {
   display: flex;
   gap: var(--space-2);
+}
+
+.install-prompt-actions .btn-primary {
+  background: var(--white) !important;
+  color: var(--primary-color) !important;
+  border: 2px solid var(--white) !important;
+  font-weight: 700;
+}
+
+.install-prompt-actions .btn-secondary {
+  background: transparent !important;
+  color: var(--white) !important;
+  border: 2px solid var(--white) !important;
+  font-weight: 600;
+}
+
+.install-prompt-actions .btn-secondary:hover {
+  background: var(--white) !important;
+  color: var(--primary-color) !important;
 }
 
 .btn-sm {
