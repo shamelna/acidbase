@@ -846,6 +846,42 @@ body {
   font-weight: 600;
 }
 
+/* Lab Values Section */
+.lab-values-section {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.lab-values-section h4 {
+  color: var(--primary-color);
+  margin-bottom: var(--space-3);
+}
+
+/* Clear Button */
+.btn-danger {
+  background: var(--danger-color) !important;
+  color: var(--white) !important;
+  border: 2px solid var(--danger-color) !important;
+  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-danger:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  transform: translateY(-1px);
+}
+
+.btn-danger:active {
+  transform: translateY(0);
+}
+
 .diagnosis-metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));

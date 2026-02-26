@@ -143,6 +143,27 @@ const loadCase = (caseData) => {
   alert('Load functionality coming soon! This feature will allow you to load previously saved patient cases.');
 };
 
+const clearAllValues = () => {
+  // Clear all input values
+  setpH('7.40');
+  setPaCo2('40');
+  setHCO3('24');
+  setNa('140');
+  setCl('100');
+  setAlbumin('40');
+  setK('4.0');
+  setCa('2.3');
+  setMg('0.8');
+  setLactate('1.5');
+  setPO4('1.0');
+  setSBD('0');
+  setUrc('');
+  setCalcSEtext('');
+  setInput('');
+  setCheckCCo2(false);
+  setCheckExac(false);
+};
+
 const exportToPDF = async () => {
   try {
     // Create new PDF document
@@ -1210,21 +1231,6 @@ function metalk() {
               <p className={`diagnosis-subtitle ${input.includes('Normal') ? 'diagnosis-normal-subtitle' : input.includes('Acidosis') ? 'diagnosis-acidosis-subtitle' : input.includes('Alkalosis') ? 'diagnosis-alkalosis-subtitle' : 'diagnosis-abnormal-subtitle'}`}>{input}</p>
             </div>
           </div>
-          
-          <div className="diagnosis-metrics">
-            <div className="metric-item">
-              <span className="metric-label">pH</span>
-              <span className={`metric-value ${getValueStatus(pH, 7.35, 7.45)}`}>{pH}</span>
-            </div>
-            <div className="metric-item">
-              <span className="metric-label">PaCO₂</span>
-              <span className={`metric-value ${getValueStatus(pv, 35, 45)}`}>{pv}</span>
-            </div>
-            <div className="metric-item">
-              <span className="metric-label">HCO₃⁻</span>
-              <span className={`metric-value ${getValueStatus(hv, 22, 28)}`}>{hv}</span>
-            </div>
-          </div>
         </div>
         
         {/* Action Buttons */}
@@ -1249,6 +1255,31 @@ function metalk() {
             >
               Export
             </button>
+            <button 
+              onClick={clearAllValues}
+              className="btn-danger"
+            >
+              Clear All Values
+            </button>
+          </div>
+        </div>
+        
+        {/* Lab Values - Separate Section */}
+        <div className="lab-values-section mt-6">
+          <h4 className="text-lg font-semibold mb-3">Input Values</h4>
+          <div className="diagnosis-metrics">
+            <div className="metric-item">
+              <span className="metric-label">pH</span>
+              <span className={`metric-value ${getValueStatus(pH, 7.35, 7.45)}`}>{pH}</span>
+            </div>
+            <div className="metric-item">
+              <span className="metric-label">PaCO₂</span>
+              <span className={`metric-value ${getValueStatus(pv, 35, 45)}`}>{pv}</span>
+            </div>
+            <div className="metric-item">
+              <span className="metric-label">HCO₃⁻</span>
+              <span className={`metric-value ${getValueStatus(hv, 22, 28)}`}>{hv}</span>
+            </div>
           </div>
         </div>
       </div>
