@@ -89,6 +89,8 @@ let AG;
 let HG;
 let  Calc_SIG,Calc_BDE;
 let checknormal;
+let numNav, numClv, numAlbuminv; // Global variables for displayDiag access
+let numPH, numPV, numHV; // Global variables for all functions to access
 
 // Helper functions
 const getValueStatus = (value, min, max) => {
@@ -438,9 +440,9 @@ const solve = () =>{
       else{
       
       // Parse pH, PaCO₂, and HCO₃ from strings to numbers (gold standard)
-      const numPH = parseFloat(pH) || 0;
-      const numPV = parseFloat(pv) || 0;
-      const numHV = parseFloat(hv) || 0;
+      numPH = parseFloat(pH) || 0;
+      numPV = parseFloat(pv) || 0;
+      numHV = parseFloat(hv) || 0;
       
       pHc = 6.1 + (Math.log10(numHV / (0.03 * numPV)) / Math.log10(10));
       pHc = Number((pHc).toFixed(2));
@@ -552,11 +554,7 @@ const CalcSE = () => {
 
 
  function Diagnosis() {
-    // Parse pH, PaCO₂, and HCO₃ from strings to numbers (gold standard)
-      const numPH = parseFloat(pH) || 0;
-      const numPV = parseFloat(pv) || 0;
-      const numHV = parseFloat(hv) || 0;
-      
+    // Use global variables declared at top of file
     Diag = "";
      if (Math.abs(pHc - numPH) > 0.1) {
         setInput(("Calculated PH = " + pHc + " Please Review Input Values"));
@@ -622,6 +620,19 @@ const CalcSE = () => {
                     Diag2 = " Alkalosis";
                     resp();
                 } else metalk();
+            } else if (CCo2 === 1) {
+                if (UrC === 0) {
+                    displayDiag("Value of Ur. Chloride is Required");
+                    return;
+                }
+                Diag = "Chronic Respiratory Acidosis + Metabolic Alkalosis (";
+                if (numPV <= 0.92 * (2 * numHV - 8)) {
+                    if (UrC < 20) displayDiag(Diag = Diag + "Post-Hypercapnic)");
+                    else displayDiag(Diag = Diag + "Mixed)");
+                } else if (UrC >= 20)
+                    displayDiag(Diag = Diag + "Independent, Chloride Resistant and/or Diuresis)");
+                else
+                    displayDiag(Diag = Diag + "Independent, Chloride Responsive, Extra-Renal Loss of Chloride)");
             }
         }
         /// 
@@ -639,29 +650,29 @@ const CalcSE = () => {
     //Log.i("MainActivity.java", "Resp" + Diag);
     Diag = "Respiratory" + Diag;
     //Log.i("MainActivity.java", "Resp" + Diag);
-    if (pH < ph1 || pH > ph2) {
+    if (numPH < ph1 || numPH > ph2) {
         Diag = "Acute" + Diag;
-        eq = 22 - (((40 - pv) / 10) * x1);
-        eq1 = 28 - (((40 - pv) / 10) * x1);
-        if (hv > eq && hv < eq1)
+        eq = 22 - (((40 - numPV) / 10) * x1);
+        eq1 = 28 - (((40 - numPV) / 10) * x1);
+        if (numHV > eq && numHV < eq1)
             Diag = "Simple Acute Respiratory " + Diag2;
-        else if (hv < eq)
+        else if (numHV < eq)
             Diag = "Acute Respiratory " + Diag2 + " + Metabolic Acidosis.";
-        else if (hv > eq1)
+        else if (numHV > eq1)
             Diag = "Acute Respiratory " + Diag2 + " + Metabolic Alkalosis.";
 
     }
 
-    if (pH >= ph1 && pH <= ph2) {
+    if (numPH >= ph1 && numPH <= ph2) {
         Diag = "Chronic " + Diag;
         //Log.i("MainActivity.java", "Resp" + Diag);
-        eq = 22 - (((40 - pv) / 10) * x2);
-        eq1 = 28 - (((40 - pv) / 10) * x2);
-        if (hv > eq && hv < eq1)
+        eq = 22 - (((40 - numPV) / 10) * x2);
+        eq1 = 28 - (((40 - numPV) / 10) * x2);
+        if (numHV > eq && numHV < eq1)
             Diag = "Simple Chronic Respiratory " + Diag2;
-        else if (hv < eq)
+        else if (numHV < eq)
             Diag = "Chronic Respiratory " + Diag2 + " + Metabolic Acidosis.";
-        else if (hv > eq1)
+        else if (numHV > eq1)
             Diag = "Chronic Respiratory " + Diag2 + " + Metabolic Alkalosis.";
 
     }
@@ -673,26 +684,26 @@ function metacid() {
   console.log("METACID");
   //Log.i("MainActivity.java", "Metacid");
   Diag = " - Metabolic" + Diag;
-  if (pH < ph1 || pH > ph2) {
-      if (pv <= p2 && pv >= p1) {
+  if (numPH < ph1 || numPH > ph2) {
+      if (numPV <= p2 && numPV >= p1) {
           Diag = "Uncompensated " + Diag;
           Diag2 = "Uncompensated ";
-      } else if (pv > p2 || pv < p1) {
+      } else if (numPV > p2 || numPV < p1) {
           Diag = "Partially Compensated " + Diag;
           Diag2 = "Partially Compensated ";
       }
   }
 
-  if (pH >= ph1 && pH <= ph2) {
+  if (numPH >= ph1 && numPH <= ph2) {
       Diag = "Compensated " + Diag;
       Diag2 = "Compensated ";
   }
 
-  if (pv >= 0.9 * (1.5 * hv + 4) && pv <= 1.1 * (1.5 * hv + 12))
+  if (numPV >= 0.9 * (1.5 * numHV + 4) && numPV <= 1.1 * (1.5 * numHV + 12))
       Diag = Diag2 + "Simple Metabolic Acidosis";
-  else if (pv < 0.9 * (1.5 * hv + 4))
+  else if (numPV < 0.9 * (1.5 * numHV + 4))
       Diag = Diag2 + "Metabolic Acidosis + Respiratory Alkalosis";
-  else if (pv > 1.1 * (1.5 * hv + 12))
+  else if (numPV > 1.1 * (1.5 * numHV + 12))
       Diag = Diag2 + "Metabolic Acidosis + Respiratory Acidosis";
 
   displayDiag(Diag);
@@ -702,32 +713,32 @@ function metalk() {
   console.log("METALK");
   //Log.i("MainActivity.java", "Metalk");
   Diag = " - Metabolic" + Diag;
-  if (pH < ph1 || pH > ph2) {
-      if (pv <= p2 && pv >= p1) {
-          Diag = "Uncompensated " + Diag;
-          Diag2 = "Uncompensated ";
+  if (numPH < ph1 || numPH > ph2) {
+    if (numPV <= p2 && numPV >= p1) {
+      Diag = "Uncompensated " + Diag;
+      Diag2 = "Uncompensated ";
 
-      } else if (pv > p2 || pv < p1) {
-          Diag = "Partially Compensated " + Diag;
-          Diag2 = "Partially Compensated ";
-      }
+    } else if (numPV > p2 || numPV < p1) {
+      Diag = "Partially Compensated " + Diag;
+      Diag2 = "Partially Compensated ";
+    }
   }
-  if (pH >= ph1 && pH <= ph2) {
-      Diag = "Compensated " + Diag;
-      Diag2 = "Compensated ";
-  }
-  if (pv >= 0.9 * (0.7 * hv + 15) && pv <= 1.1 * (0.7 * hv + 15))
-      Diag = Diag2 + "Simple Metabolic Alkalosis";
-  else if (pv < 0.9 * (0.7 * hv + 15))
-      Diag = Diag2 + "Metabolic Alkalosis + Respiratory Alkalosis";
-  else if (pv > 1.1 * (0.7 * hv + 15))
-      Diag = Diag2 + "Metabolic Alkalosis + Respiratory Acidosis";
 
+  if (numPH >= ph1 && numPH <= ph2) {
+    Diag = "Compensated " + Diag;
+    Diag2 = "Compensated ";
+  }
+  if (numPV >= 0.9 * (0.7 * numHV + 15) && numPV <= 1.1 * (0.7 * numHV + 15))
+    Diag = Diag2 + "Simple Metabolic Alkalosis";
+  else if (numPV < 0.9 * (0.7 * numHV + 15))
+    Diag = Diag2 + "Metabolic Alkalosis + Respiratory Alkalosis";
+  else if (numPV > 1.1 * (0.7 * numHV + 15))
+    Diag = Diag2 + "Metabolic Alkalosis + Respiratory Acidosis";
 
   displayDiag(Diag);
 }
-  
-  function displayDiag(message){
+
+function displayDiag(message){
     console.log("DISPLAY");
     // if (message === ""){
     //     Diag = "Please Review Input Values";
@@ -736,33 +747,23 @@ function metalk() {
     // else{
     //     setInput(Diag);
     // }
-
-     
-
-
     if (message.includes("Metabolic Acidosis")) {
+      // Parse variables for anion gap calculation
+      const numNav = parseFloat(nav) || 0;
+      const numClv = parseFloat(clv) || 0;
+      const numHV = parseFloat(hv) || 0;
+      const numAlbuminv = parseFloat(albuminv) || 0;
 
-      //      popUp(" Metabolic Acidosis");
-      //if (NaValue.getText().toString() != "") nav = ParseDouble(NaValue.getText().toString());
-      //if (CLValue.getText().toString() != "") clv = ParseDouble(CLValue.getText().toString());
-      //if (AlbuminValue.getText().toString() != "")
-      //    albuminv = ParseDouble(AlbuminValue.getText().toString());
-      //Log.i("MainActivity.java", nav + " " + clv + " " + albuminv);
-      if (nav === 0 || clv === 0 || albuminv === 0) {
+      if (numNav === 0 || numClv === 0 || numAlbuminv === 0) {
         displayDiag("Please Complete Input Values for Na, CL & Albumin");
-      //    popUp("Please Complete Input Values for Na, CL & Albumin");
-      //    DiagText.setText("Please Complete Input Values for Na, CL & Albumin");
-
-        //  return;
-
       }
-      //CheckCalc.setEnabled(true);
-      AG = nav - (clv + hv) + 0.25 * (44 - albuminv);
+
+      AG = numNav - (numClv + numHV) + 0.25 * (44 - numAlbuminv);
       if (AG <= 12) {
           DiagAG = "\n(Normal Anion Gap Acidosis)";
           message += DiagAG;
       } else if (AG > 12) {
-          HG = nav - clv - 36;
+          HG = numNav - numClv - 36;
           if (HG > 6) {
               DiagAG = "\n(High Anion Gap Metabolic Acidosis + Metabolic Alkalosis)";
               message += DiagAG;
