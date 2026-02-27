@@ -584,7 +584,7 @@ const CalcSE = () => {
         }
 //////////////////
 
-        if (Diag === "" && pH < 7.4) {
+        if (Diag === "" && pH < 7.35) {
             Diag = " Acidosis";
             //Log.i("MainActivity.java", "Resp" + Diag);
             //if (pv>=p2&&hv>=h1)
@@ -601,7 +601,7 @@ const CalcSE = () => {
 
 
         }
-        else if (Diag === "" && pH >= 7.4) {
+        else if (Diag === "" && pH > 7.45) {
           console.log(">=7.4");
             if (CCo2 === 0) {
               console.log(">=7.4 Alk");
@@ -612,23 +612,6 @@ const CalcSE = () => {
                     Diag2 = " Alkalosis";
                     resp();
                 } else metalk();
-            } else if (CCo2 === 1) {
-                if (UrC === 0) {
-                    //popUp("Value of Ur. Chloride is Required");
-                    displayDiag("Value of Ur. Chloride is Required");
-                    //TextView UrCValue = (TextView) findViewById(R.id.UrC);
-                    //UrCValue.setError("This field is required!");
-                    return;
-                }
-                Diag = "Chronic Respiratory Acidosis + Metabolic Alkalosis (";
-                if (pv <= 0.92 * (2 * hv - 8)) {
-                    if (UrC < 20) displayDiag(Diag = Diag + "Post-Hypercapnic)");
-                    else displayDiag(Diag = Diag + "Mixed)");
-                } else if (UrC >= 20)
-                    displayDiag(Diag = Diag + "Independent, Chloride Resistant and/or Diuresis)");
-                else
-                    displayDiag(Diag = Diag + "Independent, Chloride Responsive, Extra-Renal Loss of Chloride)");
-
             }
         }
         /// 
@@ -756,8 +739,12 @@ function metalk() {
       //    albuminv = ParseDouble(AlbuminValue.getText().toString());
       //Log.i("MainActivity.java", nav + " " + clv + " " + albuminv);
       if (nav === 0 || clv === 0 || albuminv === 0) {
-        setInput("Please Complete Input Values for Na, CL & Albumin");
-        return;
+        displayDiag("Please Complete Input Values for Na, CL & Albumin");
+      //    popUp("Please Complete Input Values for Na, CL & Albumin");
+      //    DiagText.setText("Please Complete Input Values for Na, CL & Albumin");
+
+        //  return;
+
       }
       //CheckCalc.setEnabled(true);
       AG = nav - (clv + hv) + 0.25 * (44 - albuminv);
