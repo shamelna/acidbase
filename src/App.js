@@ -64,19 +64,13 @@ const [UrC, setUrc] = useState('');
 const [CalcSEtext, setCalcSEtext] = useState('');
 const [isLoading, setIsLoading] = useState(false);
 const [copied, setCopied] = useState(false);
-const [highContrast, setHighContrast] = useState(false);
-const [largeText, setLargeText] = useState(false);
-const [savedCases, setSavedCases] = useState([]);
-const [showHistory, setShowHistory] = useState(false);
 const [expandedSections, setExpandedSections] = useState({
-  understanding: false,
   howItWorks: false,
   about: false
 });
-const [headerHidden, setHeaderHidden] = useState(false);
-const [lastScrollY, setLastScrollY] = useState(0);
 const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 const [deferredPrompt, setDeferredPrompt] = useState(null);
+const [savedCases, setSavedCases] = useState([]);
 let Exac;
 let CCo2;
 let pHc;
@@ -161,7 +155,7 @@ const loadCase = (caseData) => {
 };
 
 const clearAllValues = () => {
-  // Clear all input values - About hover fix version
+  // Clear all input values - Matching PNG icons completed
   setpH('');
   setPaCo2('');
   setHCO3('');
@@ -383,34 +377,6 @@ useEffect(() => {
     setSavedCases(JSON.parse(saved));
   }
 }, []);
-
-// Handle scroll behavior for mobile header
-useEffect(() => {
-  let lastScrollY = window.scrollY;
-  
-  const handleScroll = () => {
-    const currentScrollY = window.scrollY;
-    
-    // Only apply scroll behavior on mobile
-    if (window.innerWidth <= 768) {
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down and past 100px - hide header
-        setHeaderHidden(true);
-      } else if (currentScrollY < lastScrollY || currentScrollY <= 100) {
-        // Scrolling up or near top - show header
-        setHeaderHidden(false);
-      }
-    }
-    
-    lastScrollY = currentScrollY;
-  };
-
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  
-  return () => {
-    window.removeEventListener('scroll', handleScroll);
-  };
-}, [lastScrollY, headerHidden]);
 
 // Handle PWA install prompt
 useEffect(() => {
@@ -824,7 +790,7 @@ function metalk() {
 
   }
   return (
-<div className={`container fade-in-up ${highContrast ? 'high-contrast' : ''} ${largeText ? 'large-text' : ''}`}> 
+<div className="container fade-in-up"> 
 
 {/* PWA Install Prompt */}
 {showInstallPrompt && !sessionStorage.getItem('installPromptDismissed') && (
@@ -852,7 +818,7 @@ function metalk() {
   </div>
 )}
 
-<div className={`header ${headerHidden ? 'hidden' : ''}`}>
+<div className="header">
 <div className="text-center">
 <div className="flex justify-center items-center mb-2">
   <a href="/" className="flex justify-center items-center mb-2" style={{textDecoration: 'none', color: 'inherit'}}>
@@ -984,7 +950,7 @@ function metalk() {
 </div>
 
 {/* History Panel */}
-{showHistory && (
+{false && (
   <div className="form-section slide-in-up">
     <h3 className="text-xl font-semibold mb-4">{MedicalIcons.lab} Saved Cases</h3>
     <div className="saved-cases">

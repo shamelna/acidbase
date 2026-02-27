@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Convert SVG to PNG</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .canvas-container { margin: 20px 0; }
+        canvas { border: 1px solid #ccc; margin: 10px; }
+        button { padding: 10px 20px; margin: 5px; background: #12385b; color: white; border: none; cursor: pointer; }
+        button:hover { background: #017bb5; }
+    </style>
+</head>
+<body>
+    <h1>SVG to PNG Converter for Acid Base App Icons</h1>
+    
+    <div class="canvas-container">
+        <h2>192x192 Icon</h2>
+        <canvas id="canvas192" width="192" height="192"></canvas>
+        <br>
+        <button onclick="convert192()">Convert & Download 192x192 PNG</button>
+    </div>
+    
+    <div class="canvas-container">
+        <h2>512x512 Icon</h2>
+        <canvas id="canvas512" width="512" height="512"></canvas>
+        <br>
+        <button onclick="convert512()">Convert & Download 512x512 PNG</button>
+    </div>
+    
+    <script>
+        function convert192() {
+            const canvas = document.getElementById('canvas192');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 192, 192);
+            
+            // Draw background circle with gradient
+            const gradient = ctx.createLinearGradient(0, 0, 192, 192);
+            gradient.addColorStop(0, '#12385b');
+            gradient.addColorStop(1, '#017bb5');
+            
+            ctx.beginPath();
+            ctx.arc(96, 96, 84, 0, 2 * Math.PI);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 12;
+            ctx.stroke();
+            
+            // Draw medical cross
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(78, 42, 36, 108); // Vertical
+            ctx.fillRect(42, 78, 108, 36); // Horizontal
+            
+            // Draw heartbeat line
+            ctx.strokeStyle = '#de1738';
+            ctx.lineWidth = 12;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(24, 120);
+            ctx.lineTo(48, 120);
+            ctx.lineTo(60, 96);
+            ctx.lineTo(72, 144);
+            ctx.lineTo(84, 72);
+            ctx.lineTo(96, 168);
+            ctx.lineTo(108, 48);
+            ctx.lineTo(120, 120);
+            ctx.lineTo(144, 120);
+            ctx.lineTo(168, 120);
+            ctx.stroke();
+            
+            // Download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'logo192.png';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        function convert512() {
+            const canvas = document.getElementById('canvas512');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 512, 512);
+            
+            // Draw background circle with gradient
+            const gradient = ctx.createLinearGradient(0, 0, 512, 512);
+            gradient.addColorStop(0, '#12385b');
+            gradient.addColorStop(1, '#017bb5');
+            
+            ctx.beginPath();
+            ctx.arc(256, 256, 224, 0, 2 * Math.PI);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 32;
+            ctx.stroke();
+            
+            // Draw medical cross
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(208, 112, 96, 288); // Vertical
+            ctx.fillRect(112, 208, 288, 96); // Horizontal
+            
+            // Draw heartbeat line
+            ctx.strokeStyle = '#de1738';
+            ctx.lineWidth = 32;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(64, 320);
+            ctx.lineTo(128, 320);
+            ctx.lineTo(160, 256);
+            ctx.lineTo(192, 384);
+            ctx.lineTo(224, 192);
+            ctx.lineTo(256, 448);
+            ctx.lineTo(288, 128);
+            ctx.lineTo(320, 320);
+            ctx.lineTo(384, 320);
+            ctx.lineTo(448, 320);
+            ctx.stroke();
+            
+            // Download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'logo512.png';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        // Auto-convert on page load
+        window.onload = function() {
+            convert192();
+            convert512();
+        };
+    </script>
+</body>
+</html>
