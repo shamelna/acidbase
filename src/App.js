@@ -161,7 +161,7 @@ const loadCase = (caseData) => {
 };
 
 const clearAllValues = () => {
-  // Clear all input values - Final version with rich SIG formatting
+  // Clear all input values - Header cleanup version
   setpH('');
   setPaCo2('');
   setHCO3('');
@@ -174,6 +174,25 @@ const clearAllValues = () => {
   setLactate('');
   setPO4('');
   setSBD('');
+  setCalcSEtext('');
+  setInput('');
+  setCopied(false);
+};
+
+const resetToNormal = () => {
+  // Reset to normal default values
+  setpH('7.40');
+  setPaCo2('40');
+  setHCO3('24');
+  setNa('140');
+  setCl('105');
+  setAlbumin('40');
+  setK('4.0');
+  setCa('2.4');
+  setMg('0.8');
+  setLactate('1.0');
+  setPO4('1.2');
+  setSBD('0');
   setCalcSEtext('');
   setInput('');
   setCopied(false);
@@ -837,24 +856,11 @@ function metalk() {
 <div className="text-center">
 <div className="flex justify-center items-center mb-2">
   <a href="/" className="flex justify-center items-center mb-2" style={{textDecoration: 'none', color: 'inherit'}}>
-    {MedicalIcons.logo}
+    <img src="/logo.png" alt="Acid Base Logo" style={{width: '48px', height: '48px', marginRight: '16px'}} />
   </a>
-  <h1 className="text-4xl font-bold ml-4">ACID BASE MEDICAL DIAGNOSIS</h1>
+  <h1 className="text-4xl font-bold">ACID BASE MEDICAL DIAGNOSIS</h1>
 </div>
 <h2 className="text-xl font-normal">Kaizen Made Easy - Professional Medical Tool</h2>
-</div>
-{/* Accessibility Controls */}
-<div className="text-center mt-4">
-  <div className="accessibility-controls">
-    <button 
-      onClick={() => setHighContrast(!highContrast)}
-      className="btn-secondary"
-      aria-label="Toggle high contrast mode"
-    >
-      {highContrast ? 'Normal Contrast' : 'High Contrast'}
-    </button>
-    <span className="history-coming-soon">History (Coming Soon)</span>
-  </div>
 </div>
 </div>  
 
@@ -1228,7 +1234,7 @@ function metalk() {
 
 <div className="form-section card-enhanced">
 <h3 className="text-xl font-semibold">{MedicalIcons.heart} Actions</h3>
-  <div className="columns columns-2">
+  <div className="columns columns-3">
     <div className="column">
       <DiagButton 
         handleSolve={solve} 
@@ -1243,6 +1249,14 @@ function metalk() {
         onClick={clearAllValues}
       >
         Clear All Values
+      </button>
+    </div>
+    <div className="column">
+      <button 
+        className="btn-reset"
+        onClick={resetToNormal}
+      >
+        Reset to Normal
       </button>
     </div>
   </div>
