@@ -522,7 +522,7 @@ const CalcSE = () => {
     const numPH = parseFloat(pH) || 0;
     const numSBD = parseFloat(SBD) || 0;
     
-    // Calculate SIG with NaN protection
+    // Calculate SIG with NaN protection and pH-dependent corrections (gold standard)
     Calc_SIG = numNav + numCa + numMg + numK - (numClv + numLactate) - (numHv + numAlbuminv * (0.123 * numPH - 0.631) + numPO4 * (0.309 * numPH - 0.469));
     Calc_BDE = -1 * numSBD - (numNav - numClv - 38) + 0.25 * (42 - numAlbuminv);
     
@@ -584,7 +584,7 @@ const CalcSE = () => {
         }
 //////////////////
 
-        if (Diag === "" && pH < 7.35) {
+        if (Diag === "" && pH < 7.4) {
             Diag = " Acidosis";
             //Log.i("MainActivity.java", "Resp" + Diag);
             //if (pv>=p2&&hv>=h1)
