@@ -584,7 +584,7 @@ const CalcSE = () => {
         }
 //////////////////
 
-        if (Diag === "" && pH < 7.35) {
+        if (Diag === "" && pH < 7.4) {
             Diag = " Acidosis";
             //Log.i("MainActivity.java", "Resp" + Diag);
             //if (pv>=p2&&hv>=h1)
@@ -601,7 +601,7 @@ const CalcSE = () => {
 
 
         }
-        else if (Diag === "" && pH > 7.45) {
+        else if (Diag === "" && pH >= 7.4) {
           console.log(">=7.4");
             if (CCo2 === 0) {
               console.log(">=7.4 Alk");
@@ -756,12 +756,8 @@ function metalk() {
       //    albuminv = ParseDouble(AlbuminValue.getText().toString());
       //Log.i("MainActivity.java", nav + " " + clv + " " + albuminv);
       if (nav === 0 || clv === 0 || albuminv === 0) {
-        displayDiag("Please Complete Input Values for Na, CL & Albumin");
-      //    popUp("Please Complete Input Values for Na, CL & Albumin");
-      //    DiagText.setText("Please Complete Input Values for Na, CL & Albumin");
-
-        //  return;
-
+        setInput("Please Complete Input Values for Na, CL & Albumin");
+        return;
       }
       //CheckCalc.setEnabled(true);
       AG = nav - (clv + hv) + 0.25 * (44 - albuminv);
