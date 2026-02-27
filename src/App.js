@@ -161,7 +161,7 @@ const loadCase = (caseData) => {
 };
 
 const clearAllValues = () => {
-  // Clear all input values - Header cleanup version
+  // Clear all input values - About hover fix version
   setpH('');
   setPaCo2('');
   setHCO3('');
@@ -856,7 +856,7 @@ function metalk() {
 <div className="text-center">
 <div className="flex justify-center items-center mb-2">
   <a href="/" className="flex justify-center items-center mb-2" style={{textDecoration: 'none', color: 'inherit'}}>
-    <img src="/logo.png" alt="Acid Base Logo" style={{width: '48px', height: '48px', marginRight: '16px'}} />
+    <img src="/favicon.svg" alt="Acid Base Logo" style={{width: '48px', height: '48px', marginRight: '16px'}} />
   </a>
   <h1 className="text-4xl font-bold">ACID BASE MEDICAL DIAGNOSIS</h1>
 </div>
@@ -866,8 +866,14 @@ function metalk() {
 
 {/* About Section */}
 <div className="form-section card-enhanced">
-  <div className="flex justify-between items-center mb-4">
-    <h3 className="text-xl font-semibold">{MedicalIcons.lab} About Acid Base Diagnosis</h3>
+  <div 
+    className="expandable-trigger"
+    onClick={() => toggleSection('about')}
+  >
+    <div className="expandable-header">
+      <h3 className="text-xl font-semibold">{MedicalIcons.lab} About Acid Base Diagnosis</h3>
+      <span className={`expandable-icon ${expandedSections.about ? 'expanded' : ''}`}>▼</span>
+    </div>
   </div>
   
   <div className={`expandable-content ${expandedSections.about ? 'open' : ''}`}>
@@ -1236,12 +1242,13 @@ function metalk() {
 <h3 className="text-xl font-semibold">{MedicalIcons.heart} Actions</h3>
   <div className="columns columns-3">
     <div className="column">
-      <DiagButton 
-        handleSolve={solve} 
+      <button 
+        onClick={solve}
         className={`btn-primary ${isLoading ? 'loading' : ''}`}
+        disabled={isLoading}
       >
         {isLoading ? 'Analyzing...' : 'Diagnose'}
-      </DiagButton>
+      </button>
     </div>
     <div className="column">
       <button 
@@ -1253,7 +1260,7 @@ function metalk() {
     </div>
     <div className="column">
       <button 
-        className="btn-reset"
+        className="btn-primary"
         onClick={resetToNormal}
       >
         Reset to Normal
