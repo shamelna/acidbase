@@ -437,7 +437,12 @@ const solve = () =>{
       }
       else{
       
-      pHc = 6.1 + (Math.log10(hv / (0.03 * pv)) / Math.log10(10));
+      // Parse pH, PaCO₂, and HCO₃ from strings to numbers (gold standard)
+      const numPH = parseFloat(pH) || 0;
+      const numPV = parseFloat(pv) || 0;
+      const numHV = parseFloat(hv) || 0;
+      
+      pHc = 6.1 + (Math.log10(numHV / (0.03 * numPV)) / Math.log10(10));
       pHc = Number((pHc).toFixed(2));
       
       if(CCo2C !== true){
@@ -547,16 +552,21 @@ const CalcSE = () => {
 
 
  function Diagnosis() {
+    // Parse pH, PaCO₂, and HCO₃ from strings to numbers (gold standard)
+      const numPH = parseFloat(pH) || 0;
+      const numPV = parseFloat(pv) || 0;
+      const numHV = parseFloat(hv) || 0;
+      
     Diag = "";
-     if (Math.abs(pHc - pH) > 0.1) {
+     if (Math.abs(pHc - numPH) > 0.1) {
         setInput(("Calculated PH = " + pHc + " Please Review Input Values"));
     }
     else{
-        if (pH >= 7.35 && pH <= 7.45) {
+        if (numPH >= 7.35 && numPH <= 7.45) {
 
-            if (pv >= 35 && pv <= 45) {
+            if (numPV >= 35 && numPV <= 45) {
 
-                if (hv >= 22 && hv <= 28) {
+                if (numHV >= 22 && numHV <= 28) {
 
 
                     Diag = "Normal, Check Anion Gap";
@@ -584,7 +594,7 @@ const CalcSE = () => {
         }
 //////////////////
 
-        if (Diag === "" && pH < 7.4) {
+        if (Diag === "" && numPH < 7.4) {
             Diag = " Acidosis";
             //Log.i("MainActivity.java", "Resp" + Diag);
             //if (pv>=p2&&hv>=h1)
@@ -601,12 +611,12 @@ const CalcSE = () => {
 
 
         }
-        else if (Diag === "" && pH > 7.45) {
+        else if (Diag === "" && numPH >= 7.4) {
           console.log(">=7.4");
             if (CCo2 === 0) {
               console.log(">=7.4 Alk");
                 Diag = " - Alkalosis";
-                if (pv < 35) {
+                if (numPV < 35) {
                     x1 = 2;
                     x2 = 5;
                     Diag2 = " Alkalosis";
