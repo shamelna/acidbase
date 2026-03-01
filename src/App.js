@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import DiagButton from './DiagButton';
 import jsPDF from 'jspdf';
+import { Fragment } from 'react';
 
 //import logo from './logo.svg';
 //import './App.css';
@@ -66,11 +67,15 @@ const [isLoading, setIsLoading] = useState(false);
 const [copied, setCopied] = useState(false);
 const [expandedSections, setExpandedSections] = useState({
   howItWorks: false,
-  about: false
+  about: false,
+  diagnosisAlgorithm: false,
+  diagnosisLogic: false
 });
 const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 const [deferredPrompt, setDeferredPrompt] = useState(null);
 const [savedCases, setSavedCases] = useState([]);
+const [urineChlorideEnabled, setUrineChlorideEnabled] = useState(false);
+const [currentPage, setCurrentPage] = useState('main');
 let Exac;
 let CCo2;
 let pHc;
@@ -99,6 +104,30 @@ const getValueStatus = (value, min, max) => {
   if (numValue < min * 0.8 || numValue > max * 1.2) return 'critical';
   if (numValue < min || numValue > max) return 'warning';
   return 'normal';
+};
+
+// Determine pathological classification vs normal status
+const getDiagnosisClassification = (diagnosisText) => {
+  // Check for actual pathological conditions vs normal ranges
+  const phValue = parseFloat(pH) || 0;
+  const pvValue = parseFloat(pv) || 0;
+  const hvValue = parseFloat(hv) || 0;
+  
+  // Special case: "Normal Anion Gap Acidosis" is pathological despite containing "Normal"
+  if (diagnosisText.includes("Normal Anion Gap Acidosis")) {
+    return 'pathological';
+  }
+  
+  // True normal: all values within range AND no compensation detected
+  if (phValue >= 7.35 && phValue <= 7.45 && 
+      pvValue >= 35 && pvValue <= 45 && 
+      hvValue >= 22 && hvValue <= 28 &&
+      !diagnosisText.includes('Compensated')) {
+    return 'normal';
+  }
+  
+  // All other cases are pathological
+  return 'pathological';
 };
 
 const getProgressPercentage = (value, min, max) => {
@@ -437,6 +466,14 @@ const solve = () =>{
         setIsLoading(false);
         return;
       }
+      
+      // Check for missing Urine Chloride when needed
+      const willNeedUrineChloride = (CCo2 === 1 && numPH >= 7.4 && numPV >= 35 && numHV > 28);
+      if (willNeedUrineChloride && UrC === "") {
+        displayDiag("⚠️ Urine Chloride required to differentiate alkalosis etiology. Please provide value to complete diagnosis.");
+        setIsLoading(false);
+        return;
+      }
       else{
       
       // Parse pH, PaCO₂, and HCO₃ from strings to numbers (gold standard)
@@ -468,6 +505,18 @@ const solve = () =>{
       
       
       Diagnosis();
+      
+      // Check if Urine Chloride should be enabled for Metabolic Alkalosis
+      const hasMetabolicAlkalosis = input.includes("Metabolic Alkalosis") || 
+                                   input.includes("Simple Metabolic Alkalosis") ||
+                                   input.includes("Metabolic Alkalosis + Respiratory");
+      
+      if (hasMetabolicAlkalosis && !urineChlorideEnabled) {
+        setUrineChlorideEnabled(true);
+      } else if (!hasMetabolicAlkalosis && urineChlorideEnabled) {
+        setUrineChlorideEnabled(false);
+      }
+      
       setIsLoading(false);
     }
   }, 1000);
@@ -493,7 +542,7 @@ const CalcSE = () => {
     if (albuminv === "" || albuminv === null || albuminv === undefined) missingValues.push("Albumin");
     if (pH === "" || pH === null || pH === undefined) missingValues.push("pH");
     if (SBD === "" || SBD === null || SBD === undefined) missingValues.push("STD Base Deficit");
-    if (SBD !== "" && SBD !== null && SBD !== undefined && (parseFloat(SBD) <= 0 || isNaN(parseFloat(SBD)))) {
+    if (SBD !== "" && SBD !== null && SBD !== undefined && (parseFloat(SBD) < 0 || isNaN(parseFloat(SBD)))) {
       invalidValues.push("STD Base Deficit must be positive");
     }
     
@@ -783,193 +832,224 @@ function displayDiag(message){
   //scroll.scrollTo(0,scroll.getBottom());
 
   }
-  return (
-<div className="container fade-in-up"> 
+  const AboutPage = () => (
+    <div className="mt-8">
+      <div className="form-section card-enhanced">
+        <h2 className="text-2xl font-bold mb-6">{MedicalIcons.stethoscope} About Acid Base Diagnosis</h2>
 
-{/* PWA Install Prompt */}
-{showInstallPrompt && !sessionStorage.getItem('installPromptDismissed') && (
-  <div className="install-prompt">
-    <div className="install-prompt-content">
-      <div className="install-prompt-text">
-        <strong>Install Acid Base App</strong>
-        <p>Add this medical tool to your home screen for quick access</p>
-      </div>
-      <div className="install-prompt-actions">
-        <button 
-          onClick={handleInstallClick}
-          className="btn-primary btn-sm"
-        >
-          Install
-        </button>
-        <button 
-          onClick={dismissInstallPrompt}
-          className="btn-secondary btn-sm"
-        >
-          Dismiss
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-<div className="header">
-<div className="text-center">
-<div className="flex justify-center items-center mb-2">
-  <a href="/" className="flex justify-center items-center mb-2" style={{textDecoration: 'none', color: 'inherit'}}>
-    <img src="/favicon.svg" alt="Acid Base Logo" style={{width: '48px', height: '48px', marginRight: '16px'}} />
-  </a>
-  <h1 className="text-4xl font-bold">ACID BASE MEDICAL DIAGNOSIS</h1>
-</div>
-<h2 className="text-xl font-normal">Kaizen Made Easy - Professional Medical Tool</h2>
-</div>
-</div>  
-
-{/* About Section */}
-<div className="form-section card-enhanced">
-  <div 
-    className="expandable-trigger"
-    onClick={() => toggleSection('about')}
-  >
-    <div className="expandable-header">
-      <h3 className="text-xl font-semibold">{MedicalIcons.lab} About Acid Base Diagnosis</h3>
-      <span className={`expandable-icon ${expandedSections.about ? 'expanded' : ''}`}>▼</span>
-    </div>
-  </div>
-  
-  <div className={`expandable-content ${expandedSections.about ? 'open' : ''}`}>
-    <div className="about-content">
-      <div className="about-intro mb-6">
-        <p className="text-base leading-relaxed">
-          This professional Acid Base Medical Diagnosis tool is designed for healthcare providers to quickly and accurately analyze arterial blood gas (ABG) values and interpret acid-base disorders.
-        </p>
-      </div>
-
-      <div className="about-resources mb-6">
-        <h4 className="text-lg font-semibold mb-3">📚 Educational Resources</h4>
-        <div className="resource-links space-y-3">
-          <div className="resource-item">
-            <h5 className="font-medium mb-2">📖 Complete Medical Guide</h5>
-            <p className="text-sm text-secondary mb-2">
-              Comprehensive PDF documentation covering acid-base physiology, clinical applications, and case studies.
+        <div className="about-content">
+          <div className="about-overview">
+            <p className="text-base leading-relaxed mb-4">
+              This diagnostic tool helps healthcare professionals interpret arterial blood gas (ABG) results and identify acid-base disorders. 
+              It uses established medical algorithms to classify pH imbalances, determine primary disorders, assess compensation mechanisms, 
+              and calculate anion gaps for comprehensive acid-base analysis.
             </p>
-            <a 
-              href="https://drive.google.com/file/d/1-YRwh_9Vd2FvWdmzjUpLMSadsuRv52eV/edit"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-secondary"
-            >
-              📄 View Medical Guide PDF
-            </a>
           </div>
 
-          <div className="resource-item">
-            <h5 className="font-medium mb-2">🎯 Diagnosis Algorithm</h5>
-            <p className="text-sm text-secondary mb-2">
-              Step-by-step PowerPoint presentation showing the complete diagnostic algorithm and decision trees.
-            </p>
-            <a 
-              href="https://drive.google.com/file/d/1UgsqSMKz26DN8JXzpNqevFyvEthrhH0L/edit"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-secondary"
-            >
-              📊 View Algorithm Presentation
-            </a>
-          </div>
-        </div>
-      </div>
+          <div className="about-diagnosis-algorithm mt-6">
+            <h4 className="text-lg font-semibold mb-3">🎯 How This Diagnosis Works</h4>
+            <div className="p-4 bg-light-blue rounded-lg">
+              <div className="text-sm space-y-3">
+                <div>
+                  <strong>Step 1: pH Validation</strong>
+                  <div className="equation-box mt-2">
+                    <div className="equation-title">Henderson-Hasselbalch Equation:</div>
+                    <div className="equation-formula">
+                      pH = 6.1 + log₁₀(<span className="equation-fraction"><span className="numerator">[HCO₃⁻]</span><span className="denominator">0.03 × PaCO₂</span></span>)
+                    </div>
+                    <div className="equation-explanation mt-2">
+                      <span className="equation-variable">HCO₃⁻</span> = Bicarbonate (mmol/l)<br/>
+                      <span className="equation-variable">PaCO₂</span> = Partial pressure of CO₂ (mm Hg)
+                    </div>
+                  </div>
+                </div>
 
-      <div className="about-features mb-6">
-        <h4 className="text-lg font-semibold mb-3">🔬 Key Features</h4>
-        <div className="features-grid">
-          <div className="feature-item">
-            <div className="feature-icon">{MedicalIcons.stethoscope}</div>
-            <div className="feature-text">
-              <h5 className="font-medium">Real-time Analysis</h5>
-              <p className="text-sm text-secondary">Instant ABG interpretation with clinical implications</p>
-            </div>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon">{MedicalIcons.heart}</div>
-            <div className="feature-text">
-              <h5 className="font-medium">Educational Content</h5>
-              <p className="text-sm text-secondary">Detailed explanations of diagnosis logic</p>
-            </div>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon">{MedicalIcons.lab}</div>
-            <div className="feature-text">
-              <h5 className="font-medium">Advanced Calculations</h5>
-              <p className="text-sm text-secondary">SIG, BDE Gap, and Anion Gap with albumin correction</p>
-            </div>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon">{MedicalIcons.settings}</div>
-            <div className="feature-text">
-              <h5 className="font-medium">Professional Design</h5>
-              <p className="text-sm text-secondary">Medical-themed interface with accessibility features</p>
-            </div>
-          </div>
-        </div>
-      </div>
+                <div>
+                  <strong>Step 2: Primary Disorder Identification</strong>
+                  <ul className="ml-4">
+                    <li><strong>Acidosis:</strong> pH &lt; 7.35</li>
+                    <li><strong>Alkalosis:</strong> pH &gt; 7.45</li>
+                    <li><strong>Respiratory:</strong> Primary PaCO₂ abnormality</li>
+                    <li><strong>Metabolic:</strong> Primary HCO₃⁻ abnormality</li>
+                  </ul>
+                </div>
 
-      <div className="about-medical-accuracy">
-        <h4 className="text-lg font-semibold mb-3">⚕️ Medical Accuracy</h4>
-        <div className="accuracy-info">
-          <p className="text-sm mb-3">
-            This application follows established medical guidelines and incorporates evidence-based calculations:
-          </p>
-          <ul className="text-sm space-y-1 ml-4">
-            <li>• <strong>Henderson-Hasselbalch Equation</strong> for pH validation</li>
-            <li>• <strong>Compensation Ratios</strong> (Acute: 1:10, Chronic: 1:4)</li>
-            <li>• <strong>Anion Gap</strong> with albumin correction formula</li>
-            <li>• <strong>Reference Ranges</strong> based on clinical laboratory standards</li>
-            <li>• <strong>Clinical Guidelines</strong> from current medical literature</li>
-          </ul>
-        </div>
-      </div>
+                <div>
+                  <strong>Step 3: Compensation Assessment</strong>
+                  <p>Expected compensatory responses:</p>
+                  <ul className="ml-4 mt-2">
+                    <li><strong>Acute Respiratory Acidosis:</strong> HCO₃⁻ ↑ 1 mmol/l per 10 mmHg PaCO₂ ↑</li>
+                    <li><strong>Chronic Respiratory Acidosis:</strong> HCO₃⁻ ↑ 3.5 mmol/l per 10 mmHg PaCO₂ ↑</li>
+                    <li><strong>Acute Respiratory Alkalosis:</strong> HCO₃⁻ ↓ 2 mmol/l per 10 mmHg PaCO₂ ↓</li>
+                    <li><strong>Chronic Respiratory Alkalosis:</strong> HCO₃⁻ ↓ 5 mmol/l per 10 mmHg PaCO₂ ↓</li>
+                    <li><strong>Metabolic Acidosis:</strong> PaCO₂ ↓ 1.2 mmHg per 1 mmol/l HCO₃⁻ ↓</li>
+                    <li><strong>Metabolic Alkalosis:</strong> PaCO₂ ↑ 0.7 mmHg per 1 mmol/l HCO₃⁻ ↑</li>
+                  </ul>
+                </div>
 
-      <div className="about-disclaimer mt-6">
-        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-xs font-semibold text-yellow-800 mb-2">
-            ⚠️ Medical Disclaimer
-          </p>
-          <p className="text-xs text-yellow-700">
-            This tool provides educational support for healthcare professionals. Always use clinical judgment and consider full patient context. Not a substitute for medical training, professional consultation, or institutional protocols.
-          </p>
+                <div>
+                  <strong>Step 4: Mixed Disorders</strong>
+                  <p>When compensation is inadequate or excessive</p>
+                </div>
+
+                <div>
+                  <strong>Step 5: Anion Gap Calculation</strong>
+                  <div className="equation-box mt-2">
+                    <div className="equation-title">Anion Gap Formula:</div>
+                    <div className="equation-formula">
+                      AG = Na⁺ - (Cl⁻ + HCO₃⁻)
+                    </div>
+                    <div className="equation-explanation mt-2">
+                      Normal range: 8-12 mmol/l<br/>
+                      <span className="equation-variable">AG &gt; 12</span> = High anion gap acidosis<br/>
+                      <span className="equation-variable">AG &lt; 8</span> = Normal anion gap acidosis
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="educational-resources mt-6">
+            <h4 className="text-lg font-semibold mb-3">📚 Educational Resources</h4>
+            <div className="resources-grid">
+              <div className="resource-item">
+                <div className="resource-icon">📖</div>
+                <div className="resource-content">
+                  <h5 className="font-medium">Acid-Base Physiology Guide</h5>
+                  <p className="text-sm text-secondary">Comprehensive guide to acid-base balance mechanisms</p>
+                  <a 
+                    href="https://drive.google.com/file/d/1-YRwh_9Vd2FvWdmzjUpLMSadsuRv52eV/view?usp=sharing" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="resource-link"
+                  >
+                    View PDF →
+                  </a>
+                </div>
+              </div>
+              <div className="resource-item">
+                <div className="resource-icon">🎥</div>
+                <div className="resource-content">
+                  <h5 className="font-medium">Interactive Tutorial</h5>
+                  <p className="text-sm text-secondary">Step-by-step video tutorial with case examples</p>
+                  <a 
+                    href="https://drive.google.com/file/d/1UgsqSMKz26DN8JXzpNqevFyvEthrhH0L/view?usp=sharing" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="resource-link"
+                  >
+                    View Presentation →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <button onClick={() => setCurrentPage('main')} className="btn-primary mt-6">Back to Diagnosis</button>
       </div>
     </div>
-  </div>
-</div>
+  );
 
-{/* History Panel */}
-{false && (
-  <div className="form-section slide-in-up">
-    <h3 className="text-xl font-semibold mb-4">{MedicalIcons.lab} Saved Cases</h3>
-    <div className="saved-cases">
-      {savedCases.length === 0 ? (
-        <p className="text-secondary">No saved cases yet.</p>
-      ) : (
-        savedCases.map(caseData => (
-          <div key={caseData.id} className="case-item" onClick={() => loadCase(caseData)}>
-            <div className="case-item-date">{caseData.date}</div>
-            <div className="case-item-summary">
-              pH: {caseData.values.pH}, PaCO2: {caseData.values.pv}, HCO3: {caseData.values.hv}
+return (
+    <div className="app-wrapper">
+      <div className="container fade-in-up">
+        {/* PWA Install Prompt */}
+        {showInstallPrompt && !sessionStorage.getItem('installPromptDismissed') && (
+          <div className="install-prompt">
+            <div className="install-prompt-content">
+              <div className="install-prompt-text">
+                <strong>Install Acid Base App</strong>
+                <p>Add this medical tool to your home screen for quick access</p>
+              </div>
+              <div className="install-prompt-actions">
+                <button 
+                  onClick={handleInstallClick}
+                  className="btn-primary btn-sm"
+                >
+                  Install
+                </button>
+                <button 
+                  onClick={dismissInstallPrompt}
+                  className="btn-secondary btn-sm"
+                >
+                  Dismiss
+                </button>
+              </div>
             </div>
           </div>
-        ))
-      )}
-    </div>
-  </div>
-)}
+        )}
 
-<div className="mt-8">
-<div className="form-section card-enhanced">
-<h3 className="text-xl font-semibold">{MedicalIcons.stethoscope} Primary Blood Gas Values</h3>
-<p className="text-sm text-secondary mb-4">Please Check History and Exclude Normal ABG Samples</p>
+        <div className="header">
+          <div className="text-center">
+            <div className="flex justify-center items-center mb-2">
+              <a href="/" className="flex justify-center items-center mb-2" style={{textDecoration: 'none', color: 'inherit'}}>
+                <img src="/favicon.svg" alt="Acid Base Logo" style={{width: '48px', height: '48px', marginRight: '16px'}} />
+              </a>
+              <h1 className="text-4xl font-bold">ACID BASE MEDICAL DIAGNOSIS</h1>
+              <button onClick={() => setCurrentPage('about')} className="btn-secondary ml-4">About</button>
+            </div>
+            <h2 className="text-xl font-normal">Kaizen Made Easy - Professional Medical Tool</h2>
+          </div>
+        </div>
 
-<div className="columns columns-2">
+        <div className="mt-8">
+          <div className="form-section card-enhanced">
+            <h3 className="text-xl font-semibold">{MedicalIcons.stethoscope} Primary Blood Gas Values</h3>
+            <p className="text-sm text-secondary mb-4">Please Check History and Exclude Normal ABG Samples</p>
+
+            <div className="columns columns-2">
+              <div className="column">
+                <div className="tooltip">
+                  <label className="text-base font-medium">pH Value</label>
+                  <span className="tooltip-text">Normal range: 7.35-7.45</span>
+                </div>
+                <div className="control">
+                  <input 
+                    className={`input value-${getValueStatus(pH, referenceRanges.pH.min, referenceRanges.pH.max)} ${isLoading ? 'loading' : ''}`} 
+                    type="number" 
+                    value={pH}
+                    onChange={(e) => setpH(e.target.value)}
+                    placeholder="pH Value"
+                  />
+                  <div className="reference-range">
+                    Normal: {referenceRanges.pH.min}-{referenceRanges.pH.max}
+                  </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{width: `${getProgressPercentage(pH, referenceRanges.pH.min, referenceRanges.pH.max)}%`}}></div>
+                  </div>
+                  <span className={`status-${getValueStatus(pH, referenceRanges.pH.min, referenceRanges.pH.max)}`}>
+                    {getValueStatus(pH, referenceRanges.pH.min, referenceRanges.pH.max).toUpperCase()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="column">
+                <div className="tooltip">
+                  <label className="text-base font-medium">PaCO2 Value</label>
+                  <span className="tooltip-text">Normal range: 35-45 mm Hg</span>
+                </div>
+                <div className="control">
+                  <input 
+                    className={`input value-${getValueStatus(pv, referenceRanges.PaCO2.min, referenceRanges.PaCO2.max)} ${isLoading ? 'loading' : ''}`} 
+                    type="number" 
+                    value={pv}
+                    onChange={(e) => setPaCo2(e.target.value)}
+                    placeholder="PaCO2 Value (mm Hg)"
+                  />
+                  <div className="reference-range">
+                    Normal: {referenceRanges.PaCO2.min}-{referenceRanges.PaCO2.max} {referenceRanges.PaCO2.unit}
+                  </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{width: `${getProgressPercentage(pv, referenceRanges.PaCO2.min, referenceRanges.PaCO2.max)}%`}}></div>
+                  </div>
+                  <span className={`status-${getValueStatus(pv, referenceRanges.PaCO2.min, referenceRanges.PaCO2.max)}`}>
+                    {getValueStatus(pv, referenceRanges.PaCO2.min, referenceRanges.PaCO2.max).toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            </div>
 <div className="column">
     <div className="tooltip">
       <label className="text-base font-medium">pH Value</label>
@@ -1054,12 +1134,18 @@ function displayDiag(message){
     </div>
     <div className="control">
     <input 
-      className={`input ${isLoading ? 'loading' : ''}`} 
+      className={`input ${!urineChlorideEnabled ? 'disabled' : ''} ${isLoading ? 'loading' : ''}`} 
       type="number" 
       value={UrC}
       onChange={(e) => setUrc(e.target.value)}
       placeholder="Ur.Chloride"
+      disabled={!urineChlorideEnabled}
     />
+    {!urineChlorideEnabled && (
+      <div className="field-disabled-hint">
+        <small>Enabled when Metabolic Alkalosis is detected</small>
+      </div>
+    )}
     </div>
 </div>
 </div>
@@ -1228,17 +1314,19 @@ function displayDiag(message){
     </div>
   </div>
 </div>
+</div>
 
 <div className={`form-section card-enhanced ${input ? 'slide-in-up' : ''}`}>
-  {/* Diagnosis Results Header */}
-  <div className="diagnosis-header">
-    <h3 className="text-xl font-semibold mb-2">{MedicalIcons.stethoscope} Diagnosis Results</h3>
-  </div>
-  
-  {/* Primary Diagnosis Badge - Prominent Display */}
-  {input && (
+  {input ? (
+    <>
+      {/* Diagnosis Results Header */}
+      <div className="diagnosis-header">
+        <h3 className="text-xl font-semibold mb-2">{MedicalIcons.stethoscope} Diagnosis Results</h3>
+      </div>
+      
+      {/* Primary Diagnosis Badge - Prominent Display */}
       <div className="diagnosis-result-main">
-        <div className={`diagnosis-card ${input.includes('Normal') ? 'diagnosis-normal' : input.includes('Acidosis') ? 'diagnosis-acidosis' : input.includes('Alkalosis') ? 'diagnosis-alkalosis' : 'diagnosis-critical'}`}>
+        <div className={`diagnosis-card ${getDiagnosisClassification(input) === 'normal' ? 'diagnosis-normal' : getDiagnosisClassification(input) === 'pathological' ? 'diagnosis-pathological' : 'diagnosis-critical'}`}>
           <div className="diagnosis-header">
             <div className="diagnosis-icon">
               {input.includes('Normal') ? MedicalIcons.heart : 
@@ -1247,249 +1335,411 @@ function displayDiag(message){
                <span className="critical-icon">🚨</span>}
             </div>
             <div className="diagnosis-title">
-              <h2 className={`diagnosis-label ${input.includes('Normal') ? 'diagnosis-normal-text' : input.includes('Acidosis') ? 'diagnosis-acidosis-text' : input.includes('Alkalosis') ? 'diagnosis-alkalosis-text' : 'diagnosis-abnormal-text'}`}>
-                {input.includes('Normal') ? '✅ NORMAL ACID-BASE STATUS' : 
-                 input.includes('Acidosis') ? '⚠️ ACIDOSIS DETECTED' : 
-                 input.includes('Alkalosis') ? '⚠️ ALKALOSIS DETECTED' : '🚨 ABNORMAL FINDINGS'}
+              <h2 className={`diagnosis-label ${getDiagnosisClassification(input) === 'normal' ? 'diagnosis-normal-text' : getDiagnosisClassification(input) === 'pathological' ? 'diagnosis-pathological-text' : 'diagnosis-abnormal-text'}`}>
+                {getDiagnosisClassification(input) === 'normal' ? '✅ NORMAL ACID-BASE STATUS' : 
+                 getDiagnosisClassification(input) === 'pathological' ? '🚨 PATHOLOGICAL FINDINGS' : '⚠️ DIAGNOSTIC ABNORMALITY'}
               </h2>
-              <p className={`diagnosis-subtitle ${input.includes('Normal') ? 'diagnosis-normal-subtitle' : input.includes('Acidosis') ? 'diagnosis-acidosis-subtitle' : input.includes('Alkalosis') ? 'diagnosis-alkalosis-subtitle' : 'diagnosis-abnormal-subtitle'}`}>{input}</p>
+              <p className={`diagnosis-subtitle ${getDiagnosisClassification(input) === 'normal' ? 'diagnosis-normal-subtitle' : getDiagnosisClassification(input) === 'pathological' ? 'diagnosis-pathological-subtitle' : 'diagnosis-abnormal-subtitle'}`}>{input}</p>
             </div>
           </div>
-        </div>
-        
-        {/* Action Buttons */}
-        <div className="diagnosis-actions mt-4">
-          <div className="flex gap-2 flex-wrap">
-            <button 
-              onClick={() => copyToClipboard(input)}
-              className={`copy-btn ${copied ? 'copied' : ''}`}
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-            <button 
-              onClick={saveCase}
-              className="btn-secondary"
-              title="Save functionality coming soon"
-            >
-              Save (Coming Soon)
-            </button>
-            <button 
-              onClick={exportToPDF}
-              className="export-btn"
-            >
-              Export
-            </button>
-            <button 
-              onClick={clearAllValues}
-              className="btn-danger"
-            >
-              Clear All Values
-            </button>
-          </div>
-        </div>
-        
-        {/* Lab Values - Separate Section */}
-        <div className="lab-values-section mt-6">
-          <h4 className="text-lg font-semibold mb-3">Input Values</h4>
-          <div className="diagnosis-metrics">
-            <div className="metric-item">
-              <span className="metric-label">pH</span>
-              <span className={`metric-value ${getValueStatus(pH, 7.35, 7.45)}`}>{pH}</span>
-            </div>
-            <div className="metric-item">
-              <span className="metric-label">PaCO₂</span>
-              <span className={`metric-value ${getValueStatus(pv, 35, 45)}`}>{pv}</span>
-            </div>
-            <div className="metric-item">
-              <span className="metric-label">HCO₃⁻</span>
-              <span className={`metric-value ${getValueStatus(hv, 22, 28)}`}>{hv}</span>
+          
+          {/* Action Buttons */}
+          <div className="diagnosis-actions mt-4">
+            <div className="flex gap-2 flex-wrap">
+              <button 
+                onClick={() => copyToClipboard(input)}
+                className={`copy-btn ${copied ? 'copied' : ''}`}
+              >
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+              <button 
+                onClick={saveCase}
+                className="btn-secondary"
+                title="Save functionality coming soon"
+              >
+                Save (Coming Soon)
+              </button>
+              <button 
+                onClick={exportToPDF}
+                className="export-btn"
+              >
+                Export
+              </button>
+              <button 
+                onClick={clearAllValues}
+                className="btn-danger"
+              >
+                Clear All Values
+              </button>
             </div>
           </div>
-        </div>
-      </div>
-    )}
-  </div>
-  
-  {/* Enhanced Diagnosis Display */}
-  {input && (
-    <div className="diagnosis-enhanced mt-6">
-      {/* Expandable Sections */}
-      <div className="expandable-sections">
-        {/* Understanding Your Diagnosis */}
-        <div className="expandable-item">
-          <button 
-            className="expandable-trigger"
-            onClick={() => toggleSection('diagnosisLogic')}
-          >
-            <div className="expandable-header">
-              <h4 className="text-lg font-semibold">{MedicalIcons.lab} Understanding Your Diagnosis</h4>
-              <span className={`expandable-icon ${expandedSections.diagnosisLogic ? 'expanded' : ''}`}>▼</span>
-            </div>
-          </button>
-          <div className={`expandable-content ${expandedSections.diagnosisLogic ? 'open' : ''}`}>
-            <div className="p-4 bg-light-blue rounded-lg">
-              <h5 className="font-semibold mb-2">Why This Diagnosis?</h5>
-              <div className="text-sm space-y-2">
-                {input.includes('Normal') && (
-                  <div>
-                    <strong>Normal Results:</strong> Your blood gas values fall within normal ranges, indicating proper acid-base balance.
-                    <ul className="ml-4 mt-2">
-                      <li>pH: {pH} (Normal: 7.35-7.45)</li>
-                      <li>PaCO2: {pv} mm Hg (Normal: 35-45)</li>
-                      <li>HCO3: {hv} mmol/l (Normal: 22-28)</li>
-                    </ul>
-                    <p className="mt-2"><strong>Clinical Significance:</strong> No acid-base disorder detected. All values are within normal limits.</p>
-                  </div>
-                )}
-                {input.includes('Acidosis') && (
-                  <div>
-                    <strong>Acidosis:</strong> Blood pH is below normal range (&lt;7.35), indicating excess acid.
-                    <ul className="ml-4 mt-2">
-                      <li><strong>Respiratory Acidosis:</strong> High PaCO2 (&gt;45) from poor ventilation</li>
-                      <li><strong>Metabolic Acidosis:</strong> Low HCO3 (&lt;22) from acid accumulation or bicarbonate loss</li>
-                      <li><strong>Mixed Acidosis:</strong> Both respiratory and metabolic components</li>
-                    </ul>
-                  </div>
-                )}
-                {input.includes('Alkalosis') && (
-                  <div>
-                    <strong>Alkalosis:</strong> Blood pH is above normal range (&gt;7.45), indicating excess base.
-                    <ul className="ml-4 mt-2">
-                      <li><strong>Respiratory Alkalosis:</strong> Low PaCO2 (&lt;35) from hyperventilation</li>
-                      <li><strong>Metabolic Alkalosis:</strong> High HCO3 (&gt;28) from base excess or acid loss</li>
-                      <li><strong>Mixed Alkalosis:</strong> Both respiratory and metabolic components</li>
-                    </ul>
-                  </div>
-                )}
-                {input.includes('Compensated') && (
-                  <div>
-                    <strong>Compensation:</strong> Body is attempting to normalize pH through secondary mechanisms.
-                    <ul className="ml-4 mt-2">
-                      <li><strong>Respiratory Compensation:</strong> Lungs adjust CO2 levels to correct metabolic issues</li>
-                      <li><strong>Metabolic Compensation:</strong> Kidneys retain/produce bicarbonate to correct respiratory issues</li>
-                      <li><strong>Complete Compensation:</strong> pH normalized but underlying disorder persists</li>
-                    </ul>
-                  </div>
-                )}
+          
+          {/* Lab Values - Separate Section */}
+          <div className="lab-values-section mt-6">
+            <h4 className="text-lg font-semibold mb-3">Input Values</h4>
+            <div className="diagnosis-metrics">
+              <div className="metric-item">
+                <span className="metric-label">pH</span>
+                <span className={`metric-value ${getValueStatus(pH, 7.35, 7.45)}`}>{pH}</span>
               </div>
-              
-              <h5 className="font-semibold mt-4 mb-2">Clinical Implications</h5>
-              <div className="text-sm">
-                {input.includes('Normal') && (
-                  <div>
-                    <p>✅ <strong>Normal Acid-Base Status:</strong> No immediate intervention needed.</p>
-                    <p className="mt-2"><strong>Recommendations:</strong></p>
-                    <ul className="ml-4 mt-1">
-                      <li>Continue routine monitoring</li>
-                      <li>Maintain current ventilation and metabolic support</li>
-                      <li>Consider anion gap calculation if metabolic concerns exist</li>
-                      <li>Document as baseline for future comparisons</li>
-                    </ul>
-                    <p className="mt-2"><strong>When to Recheck:</strong> If clinical status changes or new symptoms develop.</p>
-                  </div>
-                )}
-                {input.includes('Acidosis') && (
-                  <div>
-                    <p>⚠️ Consider: Oxygen therapy, ventilation support, or bicarbonate administration depending on cause and severity.</p>
-                    <p className="mt-2"><strong>Urgent if:</strong> pH &lt;7.2 or severe respiratory distress</p>
-                  </div>
-                )}
-                {input.includes('Alkalosis') && (
-                  <div>
-                    <p>⚠️ Consider: Address underlying cause, monitor electrolytes, cautious fluid management.</p>
-                    <p className="mt-2"><strong>Urgent if:</strong> pH &gt;7.6 or neurological symptoms</p>
-                  </div>
-                )}
+              <div className="metric-item">
+                <span className="metric-label">PaCO₂</span>
+                <span className={`metric-value ${getValueStatus(pv, 35, 45)}`}>{pv}</span>
               </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* How This Diagnosis Works */}
-        <div className="expandable-item mt-4">
-          <button 
-            className="expandable-trigger"
-            onClick={() => toggleSection('diagnosisAlgorithm')}
-          >
-            <div className="expandable-header">
-              <h4 className="text-lg font-semibold">{MedicalIcons.settings} How This Diagnosis Works</h4>
-              <span className={`expandable-icon ${expandedSections.diagnosisAlgorithm ? 'expanded' : ''}`}>▼</span>
-            </div>
-          </button>
-          <div className={`expandable-content ${expandedSections.diagnosisAlgorithm ? 'open' : ''}`}>
-            <div className="p-4 bg-light-blue rounded-lg">
-              <h5 className="font-semibold mb-3">Diagnosis Algorithm</h5>
-              <div className="text-sm space-y-3">
-                <div>
-                  <strong>Step 1: pH Validation</strong>
-                  <div className="equation-box mt-2">
-                    <div className="equation-title">Henderson-Hasselbalch Equation:</div>
-                    <div className="equation-formula">
-                      pH = 6.1 + log₁₀(<span className="equation-fraction"><span className="numerator">[HCO₃⁻]</span><span className="denominator">0.03 × PaCO₂</span></span>)
-                    </div>
-                    <div className="equation-explanation mt-2">
-                      <span className="equation-variable">HCO₃⁻</span> = Bicarbonate (mmol/l)<br/>
-                      <span className="equation-variable">PaCO₂</span> = Partial pressure of CO₂ (mm Hg)
-                    </div>
-                  </div>
-                  <p className="ml-4 mt-3">If calculated pH differs &gt;0.1 from measured pH → Review input values</p>
-                </div>
-                
-                <div>
-                  <strong>Step 2: Primary Disorder Identification</strong>
-                  <ul className="ml-4">
-                    <li>pH &lt;7.35 → Acidosis</li>
-                    <li>pH &gt;7.45 → Alkalosis</li>
-                    <li>pH 7.35-7.45 → Normal (unless compensation present)</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <strong>Step 3: Respiratory vs Metabolic</strong>
-                  <ul className="ml-4">
-                    <li><strong>Respiratory:</strong> PaCO2 abnormal (check against pH direction)</li>
-                    <li><strong>Metabolic:</strong> HCO3 abnormal (check against pH direction)</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <strong>Step 4: Compensation Assessment</strong>
-                  <ul className="ml-4">
-                    <li><strong>Acute:</strong> Expected compensation: 1:10 ratio</li>
-                    <li><strong>Chronic:</strong> Expected compensation: 1:4 ratio</li>
-                    <li><strong>Uncompensated:</strong> pH abnormal, no compensation</li>
-                    <li><strong>Partially Compensated:</strong> pH abnormal, partial compensation</li>
-                    <li><strong>Compensated:</strong> pH normal, abnormal primary values</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <strong>Step 5: Mixed Disorders</strong>
-                  <p className="ml-4">When both respiratory and metabolic components are present and don't match expected compensation patterns.</p>
-                </div>
-                
-                <div>
-                  <strong>Step 6: Anion Gap (if metabolic acidosis)</strong>
-                  <p className="ml-4">AG = Na - (Cl + HCO3) + 0.25×(44 - Albumin)</p>
-                  <ul className="ml-4">
-                    <li>AG &le;12 → Normal anion gap acidosis</li>
-                    <li>AG &gt;12 → High anion gap acidosis</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-xs font-semibold text-yellow-800">⚠️ Medical Disclaimer: This tool provides educational support only. Always use clinical judgment and consider full patient context.</p>
+              <div className="metric-item">
+                <span className="metric-label">HCO₃⁻</span>
+                <span className={`metric-value ${getValueStatus(hv, 22, 28)}`}>{hv}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  )}
-  
-  {/* Fallback for when no diagnosis yet */}
-  {!input && (
+
+      {/* Advanced Calculations */}
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold">{MedicalIcons.lab} Advanced Calculations</h3>
+        <p className="text-sm text-secondary mb-4">Calculate Strong Ion Gap (SIG) and Base Deficit Excess (BDE) Gap</p>
+
+        <div className="columns columns-3">
+          <div className="column">
+            <div className="tooltip">
+              <label className="text-base font-medium">Potassium (K)</label>
+              <span className="tooltip-text">Normal range: 3.5-5.1 mmol/l</span>
+            </div>
+            <div className="control">
+              <input 
+                className={`input value-${getValueStatus(K, referenceRanges.K.min, referenceRanges.K.max)} ${isLoading ? 'loading' : ''}`} 
+                type="number" 
+                value={K}
+                onChange={(e) => setK(e.target.value)}
+                placeholder="K (mmol/l)"
+              />
+              <div className="reference-range">
+                Normal: {referenceRanges.K.min}-{referenceRanges.K.max} {referenceRanges.K.unit}
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{width: `${getProgressPercentage(K, referenceRanges.K.min, referenceRanges.K.max)}%`}}></div>
+              </div>
+              <span className={`status-${getValueStatus(K, referenceRanges.K.min, referenceRanges.K.max)}`}>
+                {getValueStatus(K, referenceRanges.K.min, referenceRanges.K.max).toUpperCase()}
+              </span>
+            </div>
+          </div>
+
+          <div className="column">
+            <div className="tooltip">
+              <label className="text-base font-medium">Calcium (Ca)</label>
+              <span className="tooltip-text">Normal range: 2.1-2.6 mmol/l</span>
+            </div>
+            <div className="control">
+              <input 
+                className={`input value-${getValueStatus(Ca, referenceRanges.Ca.min, referenceRanges.Ca.max)} ${isLoading ? 'loading' : ''}`} 
+                type="number" 
+                value={Ca}
+                onChange={(e) => setCa(e.target.value)}
+                placeholder="Ca (mmol/l)"
+              />
+              <div className="reference-range">
+                Normal: {referenceRanges.Ca.min}-{referenceRanges.Ca.max} {referenceRanges.Ca.unit}
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{width: `${getProgressPercentage(Ca, referenceRanges.Ca.min, referenceRanges.Ca.max)}%`}}></div>
+              </div>
+              <span className={`status-${getValueStatus(Ca, referenceRanges.Ca.min, referenceRanges.Ca.max)}`}>
+                {getValueStatus(Ca, referenceRanges.Ca.min, referenceRanges.Ca.max).toUpperCase()}
+              </span>
+            </div>
+          </div>
+
+          <div className="column">
+            <div className="tooltip">
+              <label className="text-base font-medium">Magnesium (Mg)</label>
+              <span className="tooltip-text">Normal range: 0.7-1.0 mmol/l</span>
+            </div>
+            <div className="control">
+              <input 
+                className={`input value-${getValueStatus(Mg, referenceRanges.Mg.min, referenceRanges.Mg.max)} ${isLoading ? 'loading' : ''}`} 
+                type="number" 
+                value={Mg}
+                onChange={(e) => setMg(e.target.value)}
+                placeholder="Mg (mmol/l)"
+              />
+              <div className="reference-range">
+                Normal: {referenceRanges.Mg.min}-{referenceRanges.Mg.max} {referenceRanges.Mg.unit}
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{width: `${getProgressPercentage(Mg, referenceRanges.Mg.min, referenceRanges.Mg.max)}%`}}></div>
+              </div>
+              <span className={`status-${getValueStatus(Mg, referenceRanges.Mg.min, referenceRanges.Mg.max)}`}>
+                {getValueStatus(Mg, referenceRanges.Mg.min, referenceRanges.Mg.max).toUpperCase()}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="columns columns-3 mt-4">
+          <div className="column">
+            <div className="tooltip">
+              <label className="text-base font-medium">Lactate</label>
+              <span className="tooltip-text">Normal range: 0.5-2.2 mmol/l</span>
+            </div>
+            <div className="control">
+              <input 
+                className={`input value-${getValueStatus(Lactate, referenceRanges.Lactate.min, referenceRanges.Lactate.max)} ${isLoading ? 'loading' : ''}`} 
+                type="number" 
+                value={Lactate}
+                onChange={(e) => setLactate(e.target.value)}
+                placeholder="Lactate (mmol/l)"
+              />
+              <div className="reference-range">
+                Normal: {referenceRanges.Lactate.min}-{referenceRanges.Lactate.max} {referenceRanges.Lactate.unit}
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{width: `${getProgressPercentage(Lactate, referenceRanges.Lactate.min, referenceRanges.Lactate.max)}%`}}></div>
+              </div>
+              <span className={`status-${getValueStatus(Lactate, referenceRanges.Lactate.min, referenceRanges.Lactate.max)}`}>
+                {getValueStatus(Lactate, referenceRanges.Lactate.min, referenceRanges.Lactate.max).toUpperCase()}
+              </span>
+            </div>
+          </div>
+
+          <div className="column">
+            <div className="tooltip">
+              <label className="text-base font-medium">Phosphate (PO4)</label>
+              <span className="tooltip-text">Normal range: 0.8-1.5 mmol/l</span>
+            </div>
+            <div className="control">
+              <input 
+                className={`input value-${getValueStatus(PO4, referenceRanges.PO4.min, referenceRanges.PO4.max)} ${isLoading ? 'loading' : ''}`} 
+                type="number" 
+                value={PO4}
+                onChange={(e) => setPO4(e.target.value)}
+                placeholder="PO4 (mmol/l)"
+              />
+              <div className="reference-range">
+                Normal: {referenceRanges.PO4.min}-{referenceRanges.PO4.max} {referenceRanges.PO4.unit}
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{width: `${getProgressPercentage(PO4, referenceRanges.PO4.min, referenceRanges.PO4.max)}%`}}></div>
+              </div>
+              <span className={`status-${getValueStatus(PO4, referenceRanges.PO4.min, referenceRanges.PO4.max)}`}>
+                {getValueStatus(PO4, referenceRanges.PO4.min, referenceRanges.PO4.max).toUpperCase()}
+              </span>
+            </div>
+          </div>
+
+          <div className="column">
+            <div className="tooltip">
+              <label className="text-base font-medium">+ve STD Base Deficit</label>
+              <span className="tooltip-text">Normal range: -2 to 2 mmol/l</span>
+            </div>
+            <div className="control">
+              <input 
+                className={`input value-${getValueStatus(SBD, referenceRanges.SBD.min, referenceRanges.SBD.max)} ${isLoading ? 'loading' : ''}`} 
+                type="number" 
+                value={SBD}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || parseFloat(value) > 0) {
+                    setSBD(value);
+                    e.target.classList.remove('input-warning');
+                  } else if (parseFloat(value) < 0) {
+                    e.target.classList.add('input-warning');
+                    setSBD(value);
+                    setTimeout(() => {
+                      setSBD('');
+                      e.target.classList.remove('input-warning');
+                    }, 3000);
+                  }
+                }}
+                placeholder="+ve STD Base Deficit"
+                min="0"
+                step="0.1"
+              />
+              <div className="reference-range">
+                Normal: {referenceRanges.SBD.min}-{referenceRanges.SBD.max} {referenceRanges.SBD.unit}
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill" style={{width: `${getProgressPercentage(SBD, referenceRanges.SBD.min, referenceRanges.SBD.max)}%`}}></div>
+              </div>
+              <span className={`status-${getValueStatus(SBD, referenceRanges.SBD.min, referenceRanges.SBD.max)}`}>
+                {getValueStatus(SBD, referenceRanges.SBD.min, referenceRanges.SBD.max).toUpperCase()}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <DiagButton 
+            handleSolve={CalcSE} 
+            className={`btn-primary ${isLoading ? 'loading' : ''}`}
+          >
+            {isLoading ? 'Calculating...' : 'Calculate SIG / EDB Gap'}
+          </DiagButton>
+        </div>
+
+        <div className={`mt-4 ${CalcSEtext ? 'slide-in-up' : ''}`}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold">{MedicalIcons.lab} SIG / EDB Gap Results</h3>
+            {CalcSEtext && (
+              <button 
+                onClick={() => copyToClipboard(CalcSEtext)}
+                className={`copy-btn ${copied ? 'copied' : ''}`}
+              >
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            )}
+          </div>
+
+          {CalcSEtext && CalcSEtext.includes('SIG=') ? (
+            <div className="sig-results-rich">
+              {CalcSEtext.split('\n').map((line, index) => {
+                if (line.includes('SIG=')) {
+                  const sigValue = line.split('=')[1];
+                  const isAbnormal = line.includes('Abnormal');
+                  return (
+                    <div key={index} className={`sig-result-item ${isAbnormal ? 'sig-abnormal' : 'sig-normal'}`}>
+                      <div className="sig-label">
+                        <span className="sig-icon">{isAbnormal ? '⚠️' : '✅'}</span>
+                        <span className="sig-title">Strong Ion Gap (SIG)</span>
+                      </div>
+                      <div className="sig-value">{sigValue}</div>
+                    </div>
+                  );
+                } else if (line.includes('BDE Gap=')) {
+                  const bdeValue = line.split('=')[1];
+                  return (
+                    <div key={index} className="sig-result-item sig-bde">
+                      <div className="sig-label">
+                        <span className="sig-icon">📊</span>
+                        <span className="sig-title">Base Deficit Excess (BDE) Gap</span>
+                      </div>
+                      <div className="sig-value">{bdeValue}</div>
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          ) : (
+            <div className="sig-placeholder">
+              <div className="sig-placeholder-icon">🧮</div>
+              <p>SIG / EDB Gap results will appear here...</p>
+              <p className="text-sm text-secondary">Complete all required values and click Calculate SIG / EDB Gap</p>
+            </div>
+          )}
+
+          {CalcSEtext && CalcSEtext.includes('Abnormal') && (
+            <div className="mt-4">
+              <div className="status-critical">
+                ABNORMAL ANION GAP DETECTED
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Enhanced Diagnosis Display */}
+      <div className="diagnosis-enhanced mt-6">
+        {/* Expandable Sections */}
+        <div className="expandable-sections">
+          {/* Understanding Your Diagnosis */}
+          <div className="expandable-item">
+            <button 
+              className="expandable-trigger"
+              onClick={() => toggleSection('diagnosisLogic')}
+            >
+              <div className="expandable-header">
+                <h4 className="text-lg font-semibold">{MedicalIcons.lab} Understanding Your Diagnosis</h4>
+                <span className={`expandable-icon ${expandedSections.diagnosisLogic ? 'expanded' : ''}`}>▼</span>
+              </div>
+            </button>
+            <div className={`expandable-content ${expandedSections.diagnosisLogic ? 'open' : ''}`}>
+              <div className="p-4 bg-light-blue rounded-lg">
+                <h5 className="font-semibold mb-2">Why This Diagnosis?</h5>
+                <div className="text-sm space-y-2">
+                  <>
+                    {input.includes('Normal') && (
+                      <div>
+                        <strong>Normal Results:</strong> Your blood gas values fall within normal ranges, indicating proper acid-base balance.
+                        <ul className="ml-4 mt-2">
+                          <li>pH: {pH} (Normal: 7.35-7.45)</li>
+                          <li>PaCO2: {pv} mm Hg (Normal: 35-45)</li>
+                          <li>HCO3: {hv} mmol/l (Normal: 22-28)</li>
+                        </ul>
+                        <p className="mt-2"><strong>Clinical Significance:</strong> No acid-base disorder detected. All values are within normal limits.</p>
+                      </div>
+                    )}
+                    {input.includes('Acidosis') && (
+                      <div>
+                        <strong>Acidosis:</strong> Blood pH is below normal range (&lt;7.35), indicating excess acid.
+                        <ul className="ml-4 mt-2">
+                          <li><strong>Respiratory Acidosis:</strong> High PaCO2 (&gt;45) from poor ventilation</li>
+                          <li><strong>Metabolic Acidosis:</strong> Low HCO3 (&lt;22) from acid accumulation or bicarbonate loss</li>
+                          <li><strong>Mixed Acidosis:</strong> Both respiratory and metabolic components</li>
+                        </ul>
+                      </div>
+                    )}
+                    {input.includes('Alkalosis') && (
+                      <div>
+                        <strong>Alkalosis:</strong> Blood pH is above normal range (&gt;7.45), indicating excess base.
+                        <ul className="ml-4 mt-2">
+                          <li><strong>Respiratory Alkalosis:</strong> Low PaCO2 (&lt;35) from hyperventilation</li>
+                          <li><strong>Metabolic Alkalosis:</strong> High HCO3 (&gt;28) from base excess or acid loss</li>
+                          <li><strong>Mixed Alkalosis:</strong> Both respiratory and metabolic components</li>
+                        </ul>
+                      </div>
+                    )}
+                    {input.includes('Compensated') && (
+                      <div>
+                        <strong>Compensation:</strong> Body is attempting to normalize pH through secondary mechanisms.
+                        <ul className="ml-4 mt-2">
+                          <li><strong>Respiratory Compensation:</strong> Lungs adjust CO2 levels to correct metabolic issues</li>
+                          <li><strong>Metabolic Compensation:</strong> Kidneys retain/produce bicarbonate to correct respiratory issues</li>
+                          <li><strong>Complete Compensation:</strong> pH normalized but underlying disorder persists</li>
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                </div>
+                
+                <h5 className="font-semibold mt-4 mb-2">Clinical Implications</h5>
+                <div className="text-sm">
+                  <>
+                    {input.includes('Normal') && (
+                      <div>
+                        <p>✅ <strong>Normal Acid-Base Status:</strong> No immediate intervention needed.</p>
+                        <p className="mt-2"><strong>Recommendations:</strong></p>
+                        <ul className="ml-4 mt-1">
+                          <li>Continue routine monitoring</li>
+                          <li>Maintain current ventilation and metabolic support</li>
+                          <li>Consider anion gap calculation if metabolic concerns exist</li>
+                          <li>Document as baseline for future comparisons</li>
+                        </ul>
+                        <p className="mt-2"><strong>When to Recheck:</strong> If clinical status changes or new symptoms develop.</p>
+                      </div>
+                    )}
+                    {input.includes('Acidosis') && (
+                      <div>
+                        <p>⚠️ Consider: Oxygen therapy, ventilation support, or bicarbonate administration depending on cause and severity.</p>
+                        <p className="mt-2"><strong>Urgent if:</strong> pH &lt;7.2 or severe respiratory distress</p>
+                      </div>
+                    )}
+                    {input.includes('Alkalosis') && (
+                      <div>
+                        <p>⚠️ Consider: Address underlying cause, monitor electrolytes, cautious fluid management.</p>
+                        <p className="mt-2"><strong>Urgent if:</strong> pH &gt;7.6 or neurological symptoms</p>
+                      </div>
+                    )}
+                  </>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  ) : (
     <div className="text-center py-8">
       <div className="text-gray-400">
         {MedicalIcons.stethoscope}
@@ -1498,233 +1748,7 @@ function displayDiag(message){
     </div>
   )}
 </div>
-
-<div className="form-section card-enhanced">
-<h3 className="text-xl font-semibold">{MedicalIcons.lab} Advanced Calculations</h3>
-<p className="text-sm text-secondary mb-4">Calculate Strong Ion Gap (SIG) and Base Deficit Excess (BDE) Gap</p>
-
-<div className="columns columns-3">
-<div className="column">
-    <div className="tooltip">
-      <label className="text-base font-medium">Potassium (K)</label>
-      <span className="tooltip-text">Normal range: 3.5-5.1 mmol/l</span>
-    </div>
-    <div className="control">
-    <input 
-      className={`input value-${getValueStatus(K, referenceRanges.K.min, referenceRanges.K.max)} ${isLoading ? 'loading' : ''}`} 
-      type="number" 
-      value={K}
-      onChange={(e) => setK(e.target.value)}
-      placeholder="K (mmol/l)"
-    />
-    <div className="reference-range">
-      Normal: {referenceRanges.K.min}-{referenceRanges.K.max} {referenceRanges.K.unit}
-    </div>
-    <div className="progress-bar">
-      <div className="progress-fill" style={{width: `${getProgressPercentage(K, referenceRanges.K.min, referenceRanges.K.max)}%`}}></div>
-    </div>
-    <span className={`status-${getValueStatus(K, referenceRanges.K.min, referenceRanges.K.max)}`}>
-      {getValueStatus(K, referenceRanges.K.min, referenceRanges.K.max).toUpperCase()}
-    </span>
-    </div>
 </div>
-
-<div className="column">
-    <div className="tooltip">
-      <label className="text-base font-medium">Calcium (Ca)</label>
-      <span className="tooltip-text">Normal range: 2.1-2.6 mmol/l</span>
-    </div>
-    <div className="control">
-    <input 
-      className={`input value-${getValueStatus(Ca, referenceRanges.Ca.min, referenceRanges.Ca.max)} ${isLoading ? 'loading' : ''}`} 
-      type="number" 
-      value={Ca}
-      onChange={(e) => setCa(e.target.value)}
-      placeholder="Ca (mmol/l)"
-    />
-    <div className="reference-range">
-      Normal: {referenceRanges.Ca.min}-{referenceRanges.Ca.max} {referenceRanges.Ca.unit}
-    </div>
-    <div className="progress-bar">
-      <div className="progress-fill" style={{width: `${getProgressPercentage(Ca, referenceRanges.Ca.min, referenceRanges.Ca.max)}%`}}></div>
-    </div>
-    <span className={`status-${getValueStatus(Ca, referenceRanges.Ca.min, referenceRanges.Ca.max)}`}>
-      {getValueStatus(Ca, referenceRanges.Ca.min, referenceRanges.Ca.max).toUpperCase()}
-    </span>
-    </div>
-</div>
-<div className="column">
-    <div className="tooltip">
-      <label className="text-base font-medium">Magnesium (Mg)</label>
-      <span className="tooltip-text">Normal range: 0.7-1.0 mmol/l</span>
-    </div>
-    <div className="control">
-    <input 
-      className={`input value-${getValueStatus(Mg, referenceRanges.Mg.min, referenceRanges.Mg.max)} ${isLoading ? 'loading' : ''}`} 
-      type="number" 
-      value={Mg}
-      onChange={(e) => setMg(e.target.value)}
-      placeholder="Mg (mmol/l)"
-    />
-    <div className="reference-range">
-      Normal: {referenceRanges.Mg.min}-{referenceRanges.Mg.max} {referenceRanges.Mg.unit}
-    </div>
-    <div className="progress-bar">
-      <div className="progress-fill" style={{width: `${getProgressPercentage(Mg, referenceRanges.Mg.min, referenceRanges.Mg.max)}%`}}></div>
-    </div>
-    <span className={`status-${getValueStatus(Mg, referenceRanges.Mg.min, referenceRanges.Mg.max)}`}>
-      {getValueStatus(Mg, referenceRanges.Mg.min, referenceRanges.Mg.max).toUpperCase()}
-    </span>
-    </div>
-</div>
-</div>
-
-<div className="columns columns-3 mt-4">
-<div className="column">
-    <div className="tooltip">
-      <label className="text-base font-medium">Lactate</label>
-      <span className="tooltip-text">Normal range: 0.5-2.2 mmol/l</span>
-    </div>
-    <div className="control">
-    <input 
-      className={`input value-${getValueStatus(Lactate, referenceRanges.Lactate.min, referenceRanges.Lactate.max)} ${isLoading ? 'loading' : ''}`} 
-      type="number" 
-      value={Lactate}
-      onChange={(e) => setLactate(e.target.value)}
-      placeholder="Lactate (mmol/l)"
-    />
-    <div className="reference-range">
-      Normal: {referenceRanges.Lactate.min}-{referenceRanges.Lactate.max} {referenceRanges.Lactate.unit}
-    </div>
-    <div className="progress-bar">
-      <div className="progress-fill" style={{width: `${getProgressPercentage(Lactate, referenceRanges.Lactate.min, referenceRanges.Lactate.max)}%`}}></div>
-    </div>
-    <span className={`status-${getValueStatus(Lactate, referenceRanges.Lactate.min, referenceRanges.Lactate.max)}`}>
-      {getValueStatus(Lactate, referenceRanges.Lactate.min, referenceRanges.Lactate.max).toUpperCase()}
-    </span>
-    </div>
-</div>
-
-<div className="column">
-    <div className="tooltip">
-      <label className="text-base font-medium">Phosphate (PO4)</label>
-      <span className="tooltip-text">Normal range: 0.8-1.5 mmol/l</span>
-    </div>
-    <div className="control">
-    <input 
-      className={`input value-${getValueStatus(PO4, referenceRanges.PO4.min, referenceRanges.PO4.max)} ${isLoading ? 'loading' : ''}`} 
-      type="number" 
-      value={PO4}
-      onChange={(e) => setPO4(e.target.value)}
-      placeholder="PO4 (mmol/l)"
-    />
-    <div className="reference-range">
-      Normal: {referenceRanges.PO4.min}-{referenceRanges.PO4.max} {referenceRanges.PO4.unit}
-    </div>
-    <div className="progress-bar">
-      <div className="progress-fill" style={{width: `${getProgressPercentage(PO4, referenceRanges.PO4.min, referenceRanges.PO4.max)}%`}}></div>
-    </div>
-    <span className={`status-${getValueStatus(PO4, referenceRanges.PO4.min, referenceRanges.PO4.max)}`}>
-      {getValueStatus(PO4, referenceRanges.PO4.min, referenceRanges.PO4.max).toUpperCase()}
-    </span>
-    </div>
-</div>
-<div className="column">
-    <div className="tooltip">
-      <label className="text-base font-medium">+ve STD Base Deficit</label>
-      <span className="tooltip-text">Normal range: -2 to 2 mmol/l</span>
-    </div>
-    <div className="control">
-    <input 
-      className={`input value-${getValueStatus(SBD, referenceRanges.SBD.min, referenceRanges.SBD.max)} ${isLoading ? 'loading' : ''}`} 
-      type="number" 
-      value={SBD}
-      onChange={(e) => setSBD(e.target.value)}
-      placeholder="+ve STD Base Deficit"
-    />
-    <div className="reference-range">
-      Normal: {referenceRanges.SBD.min}-{referenceRanges.SBD.max} {referenceRanges.SBD.unit}
-    </div>
-    <div className="progress-bar">
-      <div className="progress-fill" style={{width: `${getProgressPercentage(SBD, referenceRanges.SBD.min, referenceRanges.SBD.max)}%`}}></div>
-    </div>
-    <span className={`status-${getValueStatus(SBD, referenceRanges.SBD.min, referenceRanges.SBD.max)}`}>
-      {getValueStatus(SBD, referenceRanges.SBD.min, referenceRanges.SBD.max).toUpperCase()}
-    </span>
-    </div>
-</div>
-</div>
-<div className="form-section">
-  <div className="column">
-    <DiagButton 
-      handleSolve={CalcSE} 
-      className={`btn-primary ${isLoading ? 'loading' : ''}`}
-    >
-      {isLoading ? 'Calculating...' : 'Calculate SIG / EDB Gap'}
-    </DiagButton>
-  </div>
-</div>
-<div className={`form-section card-enhanced ${CalcSEtext ? 'slide-in-up' : ''}`}>
-  <div className="flex justify-between items-center mb-4">
-    <h3 className="text-xl font-semibold">{MedicalIcons.lab} SIG / EDB Gap Results</h3>
-    {CalcSEtext && (
-      <button 
-        onClick={() => copyToClipboard(CalcSEtext)}
-        className={`copy-btn ${copied ? 'copied' : ''}`}
-      >
-        {copied ? 'Copied!' : 'Copy'}
-      </button>
-    )}
-  </div>
-  {/* Rich SIG/EDB Gap Results Display */}
-  {CalcSEtext && CalcSEtext.includes('SIG=') ? (
-    <div className="sig-results-rich">
-      {CalcSEtext.split('\n').map((line, index) => {
-        if (line.includes('SIG=')) {
-          const sigValue = line.split('=')[1];
-          const isAbnormal = line.includes('Abnormal');
-          return (
-            <div key={index} className={`sig-result-item ${isAbnormal ? 'sig-abnormal' : 'sig-normal'}`}>
-              <div className="sig-label">
-                <span className="sig-icon">{isAbnormal ? '⚠️' : '✅'}</span>
-                <span className="sig-title">Strong Ion Gap (SIG)</span>
-              </div>
-              <div className="sig-value">{sigValue}</div>
-            </div>
-          );
-        } else if (line.includes('BDE Gap=')) {
-          const bdeValue = line.split('=')[1];
-          return (
-            <div key={index} className="sig-result-item sig-bde">
-              <div className="sig-label">
-                <span className="sig-icon">📊</span>
-                <span className="sig-title">Base Deficit Excess (BDE) Gap</span>
-              </div>
-              <div className="sig-value">{bdeValue}</div>
-            </div>
-          );
-        }
-        return null;
-      })}
-    </div>
-  ) : (
-    <div className="sig-placeholder">
-      <div className="sig-placeholder-icon">🧮</div>
-      <p>SIG / EDB Gap results will appear here...</p>
-      <p className="text-sm text-secondary">Complete all required values and click Calculate SIG / EDB Gap</p>
-    </div>
-  )}
-  {CalcSEtext && CalcSEtext.includes('Abnormal') && (
-    <div className="mt-4">
-      <div className="status-critical">
-        ABNORMAL ANION GAP DETECTED
-      </div>
-    </div>
-  )}
-</div>
-  </div>
-</div>
-
   )
 }
 

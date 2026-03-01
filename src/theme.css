@@ -48,6 +48,27 @@
   --shadow-sm: 0 1px 2px rgba(18, 56, 91, 0.1);
   --shadow-md: 0 4px 6px rgba(18, 56, 91, 0.1);
   --shadow-lg: 0 10px 25px rgba(18, 56, 91, 0.15);
+
+  /* Diagnosis Algorithm Section */
+  .about-diagnosis-algorithm {
+    margin-top: 1.5rem;
+  }
+
+  .about-diagnosis-algorithm .expandable-item {
+    margin-bottom: 1rem;
+  }
+
+  .about-diagnosis-algorithm .expandable-content {
+    padding: 0;
+  }
+
+  .about-diagnosis-algorithm .p-4 {
+    padding: 1rem;
+    margin-bottom: 0;
+  }
+
+  /* End Diagnosis Algorithm Section */
+
   --shadow-xl: 0 20px 40px rgba(18, 56, 91, 0.2);
 
   /* Transitions */
@@ -1678,3 +1699,23 @@ body {
   box-shadow: var(--shadow-lg);
   border-color: var(--accent-color);
 }
+
+/* Input Warning Styles */
+.input-warning {
+  position: relative;
+  border-color: #dc3545 !important;
+  background-color: rgba(220, 53, 69, 0.05);
+}
+
+.input-warning::after {
+  content: "⚠️";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #dc3545;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* End Input Warning Styles */
