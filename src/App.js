@@ -9,6 +9,32 @@ import AdvancedCalculations from './components/AdvancedCalculations.jsx';
 import AboutPage from './components/AboutPage.jsx';
 import './theme.css';
 
+// Version and deployment tracking
+const APP_VERSION = "2.1.1";
+const DEPLOYMENT_DATE = "2026-03-02";
+const BUILD_TIMESTAMP = new Date().toISOString();
+const CACHE_BUSTER = Math.random().toString(36).substring(7);
+
+// Log version information to console
+console.log(`🩺 Acid Base Medical Diagnosis App - Version ${APP_VERSION}`);
+console.log(`📅 Deployment Date: ${DEPLOYMENT_DATE}`);
+console.log(`🕐 Build Timestamp: ${BUILD_TIMESTAMP}`);
+console.log(`🔗 Site: https://acidbase.kaizenmadeeasy.com`);
+console.log(`✅ Features: Enhanced PDF export, Structured diagnosis, Light blue UI, Fixed urine chloride logic`);
+console.log(`🔄 Cache Buster: ${CACHE_BUSTER}`);
+
+// Force cache refresh if needed
+if (window.location.search.includes('forceRefresh=true')) {
+  console.log('🔄 Force refresh detected - clearing cache');
+  if ('caches' in window) {
+    caches.keys().then(cacheNames => {
+      cacheNames.forEach(cacheName => {
+        caches.delete(cacheName);
+      });
+    });
+  }
+}
+
 // Medical Icons
 const MedicalIcons = {
   stethoscope: '🩺',
