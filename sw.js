@@ -22,8 +22,42 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+
+        // Clone the request because it's a one-time use stream
+        const fetchRequest = event.request.clone();
+
+        return fetch(fetchRequest).then(response => {
+          // If fetch fails, try to return from cache even if stale
+          if (!response) {
+            return caches.match(event.request);
+          }
+
+          // Check if valid response
+          if (response.status === 200 || response.status === 0) {
+            // Clone the response because it's a one-time use stream
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                // Don't cache API calls or non-GET requests
+                if (event.request.method === 'GET' && 
+                    !event.request.url.includes('/api/') &&
+                    !event.request.url.includes('chrome-extension://')) {
+                  cache.put(event.request, responseToCache);
+                }
+              });
+          }
+
+          return response;
+        }).catch(error => {
+          // If network fetch fails, try to return from cache
+          console.log('Fetch failed, trying cache:', error);
+          return caches.match(event.request);
+        });
       })
   );
 });
