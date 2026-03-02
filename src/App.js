@@ -660,7 +660,7 @@ const App = () => {
                 <a href="/" className="flex justify-center items-center" style={{textDecoration: 'none', color: 'inherit'}}>
                   <img src="/favicon.svg" alt="Acid Base Logo" style={{width: '40px', height: '40px', marginRight: '12px'}} />
                 </a>
-                <h1 className="text-2xl sm:text-4xl font-bold text-center sm:text-left">ACID BASE MEDICAL DIAGNOSIS</h1>
+                <h1 className="text-2xl sm:text-4xl font-bold text-center sm:text-left" style={{marginTop: '20px'}}>ACID BASE MEDICAL DIAGNOSIS</h1>
               </div>
               <button onClick={() => setCurrentPage(currentPage === 'about' ? 'main' : 'about')} className="btn-secondary text-sm px-4 py-2">
                 {currentPage === 'about' ? 'Back' : 'About'}

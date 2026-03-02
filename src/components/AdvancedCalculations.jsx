@@ -246,14 +246,6 @@ const AdvancedCalculations = ({
             <p className="text-sm text-secondary">Complete all required values and click Calculate SIG / EDB Gap</p>
           </div>
         )}
-
-        {CalcSEtext && CalcSEtext.includes('Abnormal') && (
-          <div className="mt-4">
-            <div className="status-critical">
-              ABNORMAL ANION GAP DETECTED
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

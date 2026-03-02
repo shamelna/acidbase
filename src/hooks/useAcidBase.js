@@ -168,6 +168,46 @@ export const useAcidBase = () => {
       setInput(display);
       setDiagnosisResult(result); // Store the structured result
       setIsLoading(false);
+      
+      // Smooth scroll to diagnosis results positioned at vertical middle with enhanced animation
+      setTimeout(() => {
+        const resultsElement = document.querySelector('.diagnosis-enhanced');
+        if (resultsElement) {
+          const elementRect = resultsElement.getBoundingClientRect();
+          const elementTop = elementRect.top + window.pageYOffset;
+          const windowHeight = window.innerHeight;
+          const elementHeight = elementRect.height;
+          
+          // Calculate scroll position to center the element vertically
+          const scrollToPosition = elementTop - (windowHeight / 2) + (elementHeight / 2);
+          
+          // Enhanced smooth scrolling with custom animation
+          const startPosition = window.pageYOffset;
+          const distance = scrollToPosition - startPosition;
+          const duration = 800; // Animation duration in milliseconds
+          let startTime = null;
+          
+          function easeInOutCubic(t) {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+          }
+          
+          function animateScroll(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const easeProgress = easeInOutCubic(progress);
+            
+            const currentPosition = startPosition + (distance * easeProgress);
+            window.scrollTo(0, currentPosition);
+            
+            if (timeElapsed < duration) {
+              requestAnimationFrame(animateScroll);
+            }
+          }
+          
+          requestAnimationFrame(animateScroll);
+        }
+      }, 500); // Wait for results to render
     }, 1000);
   }, [pH, pv, hv, nav, clv, albuminv, UrC, CCo2C, ExacC]);
 
