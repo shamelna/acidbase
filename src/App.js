@@ -645,7 +645,7 @@ const App = () => {
               </div>
               <div className="install-prompt-text">
                 <strong>📱 Install Acid Base App</strong>
-                <p>Add to home screen for full-screen medical tool access</p>
+                <p>Add to home screen for full-screen medical diagnosis tool</p>
                 <small className="text-muted">Works offline • Full screen • Quick access</small>
               </div>
               <div className="install-prompt-actions">
