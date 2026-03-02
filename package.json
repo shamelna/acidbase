@@ -18,12 +18,14 @@
     "web-vitals": "^1.1.1"
   },
   "scripts": {
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build --dest . --dotfiles true --force",
+    "deploy:check": "npm run build && npm run deploy",
+    "deploy:status": "git log --oneline -n 5 && echo '=== gh-pages branch ===' && git log --oneline -n 5 gh-pages"
   },
   "eslintConfig": {
     "extends": [
