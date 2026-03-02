@@ -23,9 +23,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build --dest . --dotfiles true --force",
+    "deploy": "npm run build && powershell -Command \"Copy-Item -Path build\\* -Destination . -Recurse -Force\" && git add . && git commit -m \"Deploy to GitHub Pages\" && git push",
     "deploy:check": "npm run build && npm run deploy",
-    "deploy:status": "git log --oneline -n 5 && echo '=== gh-pages branch ===' && git log --oneline -n 5 gh-pages"
+    "deploy:status": "git log --oneline -n 5 && echo '=== Build files status ===' && ls -la | grep -E '(index\\.html|static)'"
   },
   "eslintConfig": {
     "extends": [
