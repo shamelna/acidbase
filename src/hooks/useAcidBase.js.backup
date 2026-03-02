@@ -24,6 +24,7 @@ export const useAcidBase = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [currentPage, setCurrentPage] = useState('main');
+  // Initialize expanded sections with diagnosisLogic open by default
   const [expandedSections, setExpandedSections] = useState({
     diagnosisLogic: true, // Open by default
     clinicalContext: false,
@@ -168,7 +169,17 @@ export const useAcidBase = () => {
       setInput(display);
       setDiagnosisResult(result); // Store the structured result
       setIsLoading(false);
-    }, 1000);
+      
+      // Scroll to diagnosis results after calculation completes
+      setTimeout(() => {
+        const resultsElement = document.querySelector('.diagnosis-enhanced');
+        if (resultsElement) {
+          resultsElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }
+      }, 500); // Reduced wait time for better UX
   }, [pH, pv, hv, nav, clv, albuminv, UrC, CCo2C, ExacC]);
 
   // SIG/EDB Gap calculation with useCallback
@@ -710,4 +721,3 @@ export const useAcidBase = () => {
     getDiagnosisClassification: memoizedGetDiagnosisClassification,
     copyToClipboard: memoizedCopyToClipboard
   };
-};

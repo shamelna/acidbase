@@ -7,6 +7,7 @@ const ActionsBar = ({ solve, clearAllValues, resetToNormal, isLoading }) => {
       <div className="columns columns-3">
         <div className="column">
           <button 
+            type="button"
             onClick={solve}
             className={`btn-primary ${isLoading ? 'loading' : ''}`}
             disabled={isLoading}
@@ -16,6 +17,7 @@ const ActionsBar = ({ solve, clearAllValues, resetToNormal, isLoading }) => {
         </div>
         <div className="column">
           <button 
+            type="button"
             className="btn-danger"
             onClick={clearAllValues}
           >
@@ -24,6 +26,7 @@ const ActionsBar = ({ solve, clearAllValues, resetToNormal, isLoading }) => {
         </div>
         <div className="column">
           <button 
+            type="button"
             className="btn-primary"
             onClick={resetToNormal}
           >

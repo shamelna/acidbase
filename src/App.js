@@ -602,20 +602,9 @@ const App = () => {
     getValueStatus, getProgressPercentage, getPhIndicatorPosition, getDiagnosisClassification, copyToClipboard
   } = useAcidBase();
 
-  // Enhanced solve function with scrolling
+  // Enhanced solve function
   const handleDiagnose = useCallback(() => {
     solve();
-    
-    // Scroll to diagnosis results after calculation completes
-    setTimeout(() => {
-      const resultsElement = document.querySelector('.form-section.card-enhanced');
-      if (resultsElement) {
-        resultsElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
-        });
-      }
-    }, 1100); // Wait for 1000ms loading + 100ms buffer
   }, [solve]);
 
   // PWA install prompt effect
@@ -668,12 +657,14 @@ const App = () => {
 
         <div className="header">
           <div className="text-center">
-            <div className="flex flex-col sm:flex-row justify-center items-center mb-2">
-              <a href="/" className="flex justify-center items-center mb-2 sm:mb-0" style={{textDecoration: 'none', color: 'inherit'}}>
-                <img src="/favicon.svg" alt="Acid Base Logo" style={{width: '40px', height: '40px', marginRight: '12px'}} />
-              </a>
-              <h1 className="text-2xl sm:text-4xl font-bold text-center sm:text-left">ACID BASE MEDICAL DIAGNOSIS</h1>
-              <button onClick={() => setCurrentPage(currentPage === 'about' ? 'main' : 'about')} className="btn-secondary ml-0 sm:ml-4 mt-2 sm:mt-0 text-sm px-3 py-1">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-2 px-4">
+              <div className="flex justify-center items-center mb-2 sm:mb-0">
+                <a href="/" className="flex justify-center items-center" style={{textDecoration: 'none', color: 'inherit'}}>
+                  <img src="/favicon.svg" alt="Acid Base Logo" style={{width: '40px', height: '40px', marginRight: '12px'}} />
+                </a>
+                <h1 className="text-2xl sm:text-4xl font-bold text-center sm:text-left">ACID BASE MEDICAL DIAGNOSIS</h1>
+              </div>
+              <button onClick={() => setCurrentPage(currentPage === 'about' ? 'main' : 'about')} className="btn-secondary text-sm px-4 py-2">
                 {currentPage === 'about' ? 'Back' : 'About'}
               </button>
             </div>
