@@ -633,9 +633,7 @@ const App = () => {
                 <img src="/favicon.svg" alt="App Icon" style={{width: '32px', height: '32px'}} />
               </div>
               <div className="install-prompt-text">
-                <strong>📱 Install Acid Base App</strong>
-                <p>Add to home screen for full-screen medical diagnosis tool</p>
-                <small className="text-muted">Works offline • Full screen • Quick access</small>
+                <strong style={{color: 'white'}}>📱 Install Acid Base App</strong>
               </div>
               <div className="install-prompt-actions">
                 <button 
@@ -655,7 +653,7 @@ const App = () => {
           </div>
         )}
 
-        <div className="header" style={{paddingTop: '60px'}}>
+        <div className="header" style={{paddingTop: '40px'}}>
           <div className="text-center">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-2 px-4">
               <div className="flex justify-center items-center mb-2 sm:mb-0">
