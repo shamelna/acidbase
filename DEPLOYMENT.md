@@ -1,6 +1,8 @@
 # Deployment Guide & Troubleshooting
 
-## 🚀 Standard Deployment Process
+## 🚀 GitHub Pages Deployment (Master Branch)
+
+**Important**: This repository uses GitHub Pages serving from the **master branch**, not gh-pages branch.
 
 ### 1. Before Deployment
 ```bash
@@ -26,6 +28,64 @@ npm run deploy
 
 # Check deployment status
 npm run deploy:status
+```
+
+### 3. How It Works
+```
+Source Code (master/src/)
+    ↓
+npm run build (creates build/ folder)
+    ↓
+Copy build files to master root
+    ↓
+Git commit and push to master
+    ↓
+GitHub Pages serves from master branch
+    ↓
+Live Website
+```
+
+### 4. File Structure After Deployment
+```
+master branch (after deployment):
+├── src/                    # Source code
+├── build/                  # Build folder (temporary)
+├── index.html             # Deployed build file
+├── static/                # Deployed build files
+├── manifest.json
+├── favicon.svg
+└── README.md
+```
+
+### 5. Deployment Script Details
+- **Build**: `npm run build` creates optimized files
+- **Copy**: PowerShell copies build files to master root
+- **Commit**: Git commits the build files
+- **Push**: Git pushes to GitHub
+- **Deploy**: GitHub Pages automatically serves from master
+
+### 6. Troubleshooting
+
+#### If deployment fails:
+```bash
+# Clean build and retry
+git clean -fd
+npm run build
+npm run deploy
+```
+
+#### If files are outdated:
+```bash
+# Force fresh deployment
+npm run deploy
+```
+
+#### If GitHub Pages shows old files:
+```bash
+# Check deployment status
+npm run deploy:status
+# Verify build files are in master root
+dir | findstr /i "index.html static"
 ```
 
 ### 3. Verify Deployment

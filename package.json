@@ -25,7 +25,7 @@
     "predeploy": "npm run build",
     "deploy": "npm run build && powershell -Command \"Copy-Item -Path build\\* -Destination . -Recurse -Force\" && git add . && git commit -m \"Deploy to GitHub Pages\" && git push",
     "deploy:check": "npm run build && npm run deploy",
-    "deploy:status": "git log --oneline -n 5 && echo '=== Build files status ===' && ls -la | grep -E '(index\\.html|static)'"
+    "deploy:status": "git log --oneline -n 5 && echo '=== Build files status ===' && dir | findstr /i \"index.html static\""
   },
   "eslintConfig": {
     "extends": [
