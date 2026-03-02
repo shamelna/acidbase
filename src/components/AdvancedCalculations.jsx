@@ -157,7 +157,7 @@ const AdvancedCalculations = ({
           </div>
           <div className="control">
             <input 
-              className={`input value-${getValueStatus(SBD, 0, 10)} ${SBD && parseFloat(SBD) <= 0 ? 'input-error' : ''}`} 
+              className={`input ${SBD && parseFloat(SBD) <= 0 ? 'input-error' : ''}`} 
               type="number" 
               value={SBD}
               onChange={(e) => {
@@ -170,24 +170,11 @@ const AdvancedCalculations = ({
                   setSBD('');
                 }
               }}
-              placeholder="Positive value only"
-              min="0.1"
-              step="0.1"
+              placeholder="Enter positive value"
             />
-            <div className="reference-range">
-              Required: &gt; 0 {referenceRanges.SBD.unit}
-            </div>
             {SBD && parseFloat(SBD) <= 0 && (
-              <div className="field-error-hint">
-                <small className="text-danger">⚠️ Must be positive value for calculation</small>
-              </div>
+              <p className="help is-danger">Must be positive value (&gt;0)</p>
             )}
-            <div className="progress-bar">
-              <div className="progress-fill" style={{width: `${getProgressPercentage(SBD, 0, 10)}%`}}></div>
-            </div>
-            <span className={`status-${getValueStatus(SBD, 0, 10)}`}>
-              {SBD && parseFloat(SBD) > 0 ? getValueStatus(SBD, 0, 10).toUpperCase() : 'REQUIRED'}
-            </span>
           </div>
         </div>
       </div>

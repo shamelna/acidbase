@@ -636,13 +636,17 @@ const App = () => {
   return (
     <div className="app-wrapper">
       <div className="container fade-in-up">
-        {/* PWA Install Prompt */}
+        {/* PWA Install Prompt - Mobile Optimized */}
         {showInstallPrompt && !sessionStorage.getItem('installPromptDismissed') && currentPage === 'main' && (
-          <div className="install-prompt">
+          <div className="install-prompt mobile-optimized">
             <div className="install-prompt-content">
+              <div className="install-prompt-icon">
+                <img src="/favicon.svg" alt="App Icon" style={{width: '32px', height: '32px'}} />
+              </div>
               <div className="install-prompt-text">
-                <strong>Install Acid Base App</strong>
-                <p>Add this medical tool to your home screen for quick access</p>
+                <strong>📱 Install Acid Base App</strong>
+                <p>Add to home screen for full-screen medical tool access</p>
+                <small className="text-muted">Works offline • Full screen • Quick access</small>
               </div>
               <div className="install-prompt-actions">
                 <button 
@@ -655,7 +659,7 @@ const App = () => {
                   onClick={dismissInstallPrompt}
                   className="btn-secondary btn-sm"
                 >
-                  Dismiss
+                  Later
                 </button>
               </div>
             </div>
@@ -664,16 +668,16 @@ const App = () => {
 
         <div className="header">
           <div className="text-center">
-            <div className="flex justify-center items-center mb-2">
-              <a href="/" className="flex justify-center items-center mb-2" style={{textDecoration: 'none', color: 'inherit'}}>
-                <img src="/favicon.svg" alt="Acid Base Logo" style={{width: '48px', height: '48px', marginRight: '16px'}} />
+            <div className="flex flex-col sm:flex-row justify-center items-center mb-2">
+              <a href="/" className="flex justify-center items-center mb-2 sm:mb-0" style={{textDecoration: 'none', color: 'inherit'}}>
+                <img src="/favicon.svg" alt="Acid Base Logo" style={{width: '40px', height: '40px', marginRight: '12px'}} />
               </a>
-              <h1 className="text-4xl font-bold">ACID BASE MEDICAL DIAGNOSIS</h1>
-              <button onClick={() => setCurrentPage(currentPage === 'about' ? 'main' : 'about')} className="btn-secondary ml-4">
-                {currentPage === 'about' ? 'Back to Diagnosis' : 'About'}
+              <h1 className="text-2xl sm:text-4xl font-bold text-center sm:text-left">ACID BASE MEDICAL DIAGNOSIS</h1>
+              <button onClick={() => setCurrentPage(currentPage === 'about' ? 'main' : 'about')} className="btn-secondary ml-0 sm:ml-4 mt-2 sm:mt-0 text-sm px-3 py-1">
+                {currentPage === 'about' ? 'Back' : 'About'}
               </button>
             </div>
-            <h2 className="text-xl font-normal">Kaizen Made Easy - Professional Medical Tool</h2>
+            <h2 className="text-lg sm:text-xl font-normal">Kaizen Made Easy - Professional Medical Tool</h2>
           </div>
         </div>
 
