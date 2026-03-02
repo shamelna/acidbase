@@ -1686,12 +1686,12 @@ body {
 /* PWA Install Prompt */
 .install-prompt {
   position: fixed;
-  top: 80px; /* Position below header */
+  top: 0;
   left: 0;
   right: 0;
   background: var(--primary-color);
   color: var(--white);
-  padding: var(--space-4);
+  padding: var(--space-2) var(--space-4); /* Thinner: less vertical padding */
   z-index: 1000;
   border-bottom: 1px solid var(--accent-color);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -1705,8 +1705,7 @@ body {
 /* Mobile adjustments for PWA prompt */
 @media (max-width: 768px) {
   .install-prompt {
-    top: 120px; /* More space for mobile header */
-    padding: var(--space-3);
+    padding: var(--space-2) var(--space-3); /* Even thinner on mobile */
   }
 }
 

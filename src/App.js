@@ -655,7 +655,7 @@ const App = () => {
           </div>
         )}
 
-        <div className="header">
+        <div className="header" style={{paddingTop: '60px'}}>
           <div className="text-center">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-2 px-4">
               <div className="flex justify-center items-center mb-2 sm:mb-0">
