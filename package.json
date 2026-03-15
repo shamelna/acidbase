@@ -15,7 +15,8 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "^5.0.1",
-    "web-vitals": "^1.1.1"
+    "web-vitals": "^1.1.1",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -47,5 +48,17 @@
   },
   "devDependencies": {
     "gh-pages": "^3.1.0"
+  },
+  "description": "A professional React-based web application for healthcare providers to analyze and interpret arterial blood gas (ABG) values and acid-base disorders.",
+  "main": "excel-diagnosis-processor-xlsx.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shamelna/acidbase.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shamelna/acidbase/issues"
   }
 }

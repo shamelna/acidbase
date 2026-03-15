@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
-import { Diagnosis, displayDiag } from '../utils/diagnosisLogic.js';
+import { runDiagnosis, getSeverityClassification } from '../utils/diagnosisEngine.js';
 import { getValueStatus, getProgressPercentage, getPhIndicatorPosition, getDiagnosisClassification, copyToClipboard } from '../utils/diagnosisUtils.js';
 
 export const useAcidBase = () => {
@@ -163,10 +163,20 @@ export const useAcidBase = () => {
         return;
       }
       
-      const result = Diagnosis(pH, pv, hv, nav, clv, albuminv, UrC, CCo2C, ExacC);
-      const display = displayDiag(result);
-      setInput(display);
-      setDiagnosisResult(result); // Store the structured result
+      const diagnosisText = runDiagnosis({ 
+        pH: parseFloat(pH), 
+        pv: parseFloat(pv), 
+        hv: parseFloat(hv), 
+        nav: parseFloat(nav), 
+        clv: parseFloat(clv), 
+        albuminv: parseFloat(albuminv), 
+        CCo2: CCo2C ? 1 : 0, 
+        Exac: ExacC ? 1 : 0, 
+        UrC: parseFloat(UrC) || null 
+      });
+      
+      setInput(diagnosisText);
+      setDiagnosisResult({ diagnosis: diagnosisText }); // Store the structured result
       setIsLoading(false);
       
       // Smooth scroll to diagnosis results positioned at vertical middle with enhanced animation
