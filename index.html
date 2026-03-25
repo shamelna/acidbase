@@ -1,1 +1,2823 @@
-<!doctype html><html lang="en"><head><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css"><meta charset="utf-8"/><link rel="icon" href="/favicon.svg" type="image/svg+xml"/><link rel="apple-touch-icon" href="/favicon.svg"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#12385b"/><meta name="description" content="Professional Acid-Base Medical Diagnosis Tool for Healthcare Providers"/><link rel="manifest" href="/manifest.json"/><script>"serviceWorker"in navigator&&window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").then(e=>{console.log("SW registered: ",e)}).catch(e=>{console.log("SW registration failed: ",e)})})</script><title>Acid Base Medical Diagnosis</title><script defer="defer" src="/static/js/main.2e70590c.js"></script><link href="/static/css/main.9df5792e.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acid-Base Analyser</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12385b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ABG Analyser">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:   #12385b;
+  --blue:   #017bb5;
+  --red:    #de1738;
+  --bg:     #e9f0f8;
+  --white:  #ffffff;
+  --navy10: rgba(18,56,91,.08);
+  --navy20: rgba(18,56,91,.15);
+  --navy40: rgba(18,56,91,.35);
+  --blue10: rgba(1,123,181,.10);
+  --blue20: rgba(1,123,181,.20);
+  --red10:  rgba(222,23,56,.10);
+  --red20:  rgba(222,23,56,.20);
+  --text:   #0e2a42;
+  --muted:  #6b88a2;
+  --border: rgba(18,56,91,.12);
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --font: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+  --shadow-sm: 0 1px 3px rgba(18,56,91,.08), 0 1px 2px rgba(18,56,91,.06);
+  --shadow-md: 0 4px 12px rgba(18,56,91,.10), 0 2px 4px rgba(18,56,91,.07);
+  --shadow-lg: 0 12px 32px rgba(18,56,91,.13), 0 4px 8px rgba(18,56,91,.08);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ─── Top bar ─────────────────────────────────────────────── */
+.topbar {
+  background: var(--navy);
+  padding: 0 28px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.topbar-logo {
+  width: 32px;
+  height: 32px;
+  background: var(--blue);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.topbar-logo svg { display:block }
+.topbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -.01em;
+}
+.topbar-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,.5);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.topbar-badge {
+  font-size: 11px;
+  color: rgba(255,255,255,.55);
+  font-family: var(--mono);
+  letter-spacing: .02em;
+}
+
+/* ─── Layout ──────────────────────────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 0;
+  min-height: calc(100vh - 56px);
+}
+
+.sidebar {
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  padding: 24px 20px;
+  overflow-y: auto;
+}
+
+.main {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ─── Cards ───────────────────────────────────────────────── */
+.card {
+  background: var(--white);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 20px 22px;
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-title-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  display: inline-block;
+}
+
+/* ─── Section labels (sidebar) ────────────────────────────── */
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 20px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.section-label:first-child { margin-top: 0 }
+
+/* ─── Sliders ─────────────────────────────────────────────── */
+.slider-row {
+  margin-bottom: 14px;
+}
+.slider-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.slider-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+.slider-unit {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 3px;
+}
+.slider-value {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--navy);
+  min-width: 48px;
+  text-align: right;
+  transition: color .15s;
+}
+.slider-value.out { color: var(--red) }
+.slider-value.in  { color: #1a7a3a }
+
+.slider-track {
+  position: relative;
+  height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--navy10);
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 3px solid var(--white);
+  box-shadow: 0 0 0 1.5px var(--navy), var(--shadow-sm);
+  margin-top: -7px;
+  transition: transform .1s, box-shadow .1s;
+}
+input[type=range]:hover::-webkit-slider-thumb,
+input[type=range]:focus::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px var(--blue), var(--shadow-md);
+}
+input[type=range]::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 3px solid var(--white);
+  box-shadow: 0 0 0 1.5px var(--navy);
+}
+
+.range-bar {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  left: 0; right: 0;
+  height: 4px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+.range-fill {
+  position: absolute;
+  height: 100%;
+  border-radius: 2px;
+  transition: left .2s, width .2s, background .2s;
+}
+.range-normal {
+  position: absolute;
+  height: 100%;
+  background: rgba(26,122,58,.18);
+  border-radius: 2px;
+}
+.range-minmax {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+
+/* ─── Presets ─────────────────────────────────────────────── */
+.presets-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.preset-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 8px 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all .15s;
+  font-family: var(--font);
+}
+.preset-btn:hover {
+  background: var(--blue10);
+  border-color: var(--blue);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.preset-btn.active {
+  background: var(--navy);
+  border-color: var(--navy);
+}
+.preset-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  display: block;
+}
+.preset-btn.active .preset-name { color: #fff }
+.preset-detail {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: var(--mono);
+  display: block;
+  margin-top: 1px;
+}
+.preset-btn.active .preset-detail { color: rgba(255,255,255,.6) }
+
+/* ─── Checkboxes ──────────────────────────────────────────── */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all .15s;
+  margin-bottom: 6px;
+  background: var(--bg);
+}
+.checkbox-row:hover { border-color: var(--blue); background: var(--blue10) }
+.checkbox-row input { display: none }
+.checkbox-box {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--navy40);
+  background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all .15s;
+}
+.checkbox-row.checked .checkbox-box {
+  background: var(--navy);
+  border-color: var(--navy);
+}
+.checkbox-box svg { opacity: 0; transition: opacity .1s }
+.checkbox-row.checked .checkbox-box svg { opacity: 1 }
+.checkbox-text { font-size: 12px; font-weight: 500; color: var(--text) }
+
+/* ─── Diagnosis result ────────────────────────────────────── */
+.diag-card {
+  border-radius: var(--r-xl);
+  padding: 22px 24px;
+  border: 1.5px solid transparent;
+  transition: all .3s ease;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+.diag-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  transition: background .3s;
+}
+.diag-card.acidosis { background: #fff5f7; border-color: rgba(222,23,56,.25) }
+.diag-card.acidosis::before { background: var(--red) }
+.diag-card.alkalosis { background: #f0f8ff; border-color: rgba(1,123,181,.25) }
+.diag-card.alkalosis::before { background: var(--blue) }
+.diag-card.normal { background: #f0fff5; border-color: rgba(26,122,58,.25) }
+.diag-card.normal::before { background: #1a7a3a }
+.diag-card.neutral { background: var(--white); border-color: var(--border) }
+
+.diag-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.diag-tag.acidosis { background: var(--red20); color: #8b0f22 }
+.diag-tag.alkalosis { background: var(--blue20); color: #014f77 }
+.diag-tag.normal { background: rgba(26,122,58,.15); color: #0f4a22 }
+
+.diag-primary {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--navy);
+  letter-spacing: -.02em;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  transition: all .2s;
+}
+.diag-ag {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.diag-ag span {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ─── pH validity warning ─────────────────────────────────── */
+.ph-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(222,23,56,.08);
+  border: 1px solid rgba(222,23,56,.2);
+  border-radius: var(--r-md);
+  font-size: 12px;
+  color: #8b0f22;
+  margin-bottom: 10px;
+  transition: opacity .2s;
+}
+.ph-warning.hidden { opacity: 0; pointer-events: none; height: 0; padding: 0; margin: 0; border: none; overflow: hidden }
+
+/* ─── Explanation card ────────────────────────────────────── */
+.explanation-box {
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.explanation-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.step-list { list-style: none; display: flex; flex-direction: column; gap: 7px }
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: fadeSlide .25s ease both;
+}
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(4px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+.step-item:nth-child(1){animation-delay:.00s}
+.step-item:nth-child(2){animation-delay:.05s}
+.step-item:nth-child(3){animation-delay:.10s}
+.step-item:nth-child(4){animation-delay:.15s}
+.step-item:nth-child(5){animation-delay:.20s}
+.step-item:nth-child(6){animation-delay:.25s}
+.step-item:nth-child(7){animation-delay:.30s}
+.step-num {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.step-num.gray   { background: var(--navy10); color: var(--navy) }
+.step-num.red    { background: var(--red10); color: #8b0f22 }
+.step-num.blue   { background: var(--blue10); color: #014f77 }
+.step-num.green  { background: rgba(26,122,58,.12); color: #0f4a22 }
+.step-num.amber  { background: rgba(185,120,0,.12); color: #7a4e00 }
+.step-body { color: var(--text) }
+.step-body b { font-weight: 600; color: var(--navy) }
+.step-body .mono { font-family: var(--mono); font-size: 12px; background: var(--navy10); padding: 1px 5px; border-radius: 3px }
+
+/* ─── Metrics grid ────────────────────────────────────────── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.metric-tile {
+  background: var(--bg);
+  border-radius: var(--r-lg);
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  transition: all .2s;
+}
+.metric-tile.highlight {
+  background: var(--navy);
+  border-color: var(--navy);
+}
+.metric-tile.warn {
+  background: var(--red10);
+  border-color: rgba(222,23,56,.25);
+}
+.metric-name {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.metric-tile.highlight .metric-name { color: rgba(255,255,255,.6) }
+.metric-tile.warn .metric-name { color: #8b0f22 }
+.metric-val {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--navy);
+  line-height: 1;
+  transition: all .2s;
+}
+.metric-tile.highlight .metric-val { color: #fff }
+.metric-tile.warn .metric-val { color: #8b0f22 }
+.metric-sub {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 3px;
+  font-family: var(--mono);
+}
+.metric-tile.highlight .metric-sub { color: rgba(255,255,255,.5) }
+
+/* ─── Ranges indicators ───────────────────────────────────── */
+.range-indicators {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.ri-item {
+  background: var(--bg);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+}
+.ri-label { font-size: 11px; color: var(--muted); font-weight: 500; margin-bottom: 6px }
+.ri-bar {
+  height: 6px;
+  background: var(--navy10);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+.ri-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .3s ease, background .3s;
+}
+.ri-marker {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  border-radius: 1px;
+  transform: translateX(-50%);
+  transition: left .3s ease;
+}
+.ri-status {
+  font-size: 10px;
+  font-family: var(--mono);
+  margin-top: 4px;
+  font-weight: 500;
+}
+.ri-status.ok { color: #1a7a3a }
+.ri-status.out { color: var(--red) }
+
+/* ─── SIG section ─────────────────────────────────────────── */
+.sig-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.sig-result {
+  background: var(--navy);
+  border-radius: var(--r-lg);
+  padding: 16px 18px;
+  color: #fff;
+  margin-top: 4px;
+}
+.sig-result-label { font-size: 11px; color: rgba(255,255,255,.55); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px }
+.sig-result-val { font-family: var(--mono); font-size: 22px; font-weight: 500; line-height: 1; margin-bottom: 3px }
+.sig-result-sub { font-size: 12px; color: rgba(255,255,255,.6) }
+.sig-grid-results { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px }
+
+.sig-note {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: var(--r-md);
+  border-left: 3px solid var(--blue);
+  margin-top: 10px;
+}
+
+/* ─── Two column results ──────────────────────────────────── */
+.results-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px }
+::-webkit-scrollbar-track { background: transparent }
+::-webkit-scrollbar-thumb { background: var(--navy20); border-radius: 3px }
+
+/* ─── Tabs ────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg);
+  border-radius: var(--r-md);
+  padding: 3px;
+  border: 1px solid var(--border);
+}
+.tab-btn {
+  flex: 1;
+  padding: 7px 12px;
+  border: none;
+  border-radius: calc(var(--r-md) - 2px);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  transition: all .15s;
+}
+.tab-btn.active {
+  background: var(--white);
+  color: var(--navy);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-panel { display: none }
+.tab-panel.active { display: block }
+
+/* ─── Responsive ──────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--border) }
+  .metrics-grid { grid-template-columns: repeat(2,1fr) }
+  .results-row { grid-template-columns: 1fr }
+  .sig-grid { grid-template-columns: repeat(2,1fr) }
+}
+@media (max-width: 600px) {
+  .topbar { padding: 0 16px }
+  .main { padding: 16px }
+  .metrics-grid { grid-template-columns: repeat(2,1fr) }
+  .range-indicators { grid-template-columns: 1fr 1fr }
+  .presets-grid { grid-template-columns: 1fr }
+}
+
+/* ─── Numeric keyboard input paired with slider ──────────── */
+.num-input {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  width: 62px;
+  padding: 3px 7px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--navy);
+  text-align: right;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+  -moz-appearance: textfield;
+}
+.num-input::-webkit-outer-spin-button,
+.num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0 }
+.num-input:hover { border-color: var(--navy20); background: var(--white) }
+.num-input:focus {
+  border-color: var(--blue);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(1,123,181,.15);
+}
+.num-input.out { border-color: rgba(222,23,56,.4); color: var(--red) }
+.num-input.in  { border-color: rgba(26,122,58,.4); color: #1a7a3a }
+.num-input.warn{ border-color: rgba(222,23,56,.5); color: #8b0f22; background: rgba(222,23,56,.04) }
+
+/* ─── Batch tab styles ────────────────────────────────────── */
+#drop-zone:hover { border-color: var(--blue); background: var(--blue10) }
+#drop-zone.dragover { border-color: var(--blue); background: var(--blue10); transform:scale(1.01) }
+
+.batch-case {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: box-shadow .15s;
+}
+.batch-case:hover { box-shadow: var(--shadow-sm) }
+.batch-case-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: var(--white);
+  transition: background .15s;
+  user-select: none;
+}
+.batch-case-header:hover { background: var(--bg) }
+.batch-case.open .batch-case-header { background: var(--bg) }
+.batch-case-num {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.batch-case-id { font-size: 13px; font-weight: 500; color: var(--text) }
+.batch-case-diag { font-size: 12px; color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.batch-diag-badge {
+  font-size: 10px; font-weight: 600; padding: 2px 8px;
+  border-radius: 10px; white-space: nowrap; letter-spacing: .04em;
+}
+.badge-acid  { background: var(--red20); color: #8b0f22 }
+.badge-alk   { background: var(--blue20); color: #014f77 }
+.badge-norm  { background: rgba(26,122,58,.15); color: #0f4a22 }
+.badge-mix   { background: rgba(185,120,0,.12); color: #7a4e00 }
+.batch-chevron { color: var(--muted); font-size: 12px; transition: transform .2s }
+.batch-case.open .batch-chevron { transform: rotate(90deg) }
+.batch-case-body {
+  display: none;
+  padding: 0 16px 16px;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+}
+.batch-case.open .batch-case-body { display: block }
+.batch-inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 6px;
+  margin: 12px 0;
+}
+.batch-inp-tile {
+  background: var(--bg);
+  border-radius: var(--r-sm);
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+}
+.batch-inp-lbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted) }
+.batch-inp-val { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--navy) }
+.batch-diag-box {
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  border-left: 3px solid transparent;
+  margin-top: 8px;
+}
+.batch-diag-box.acidosis { background:#fff5f7; border-left-color:#de1738 }
+.batch-diag-box.alkalosis { background:#f0f8ff; border-left-color:#017bb5 }
+.batch-diag-box.normal { background:#f0fff5; border-left-color:#1a7a3a }
+.batch-diag-primary { font-size:14px; font-weight:500; color:var(--navy); margin-bottom:2px }
+.batch-diag-ag { font-size:12px; color:var(--muted) }
+.batch-steps { margin-top:10px; list-style:none; display:flex; flex-direction:column; gap:5px }
+.batch-step { display:flex; align-items:flex-start; gap:8px; font-size:11.5px; line-height:1.5 }
+.batch-step-dot { width:16px; height:16px; border-radius:50%; font-size:9px; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px }
+.summary-pill { font-size:11px; font-weight:500; padding:4px 10px; border-radius:12px; border: 1px solid transparent }
+
+/* ─── Topbar About button ──────────────────────────────────── */
+.topbar-right { display:flex; align-items:center; gap:12px }
+.topbar-about-btn {
+  padding: 5px 13px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: var(--r-md);
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.8);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.topbar-about-btn:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.45); color:#fff }
+
+/* ─── Diagnosis action row ─────────────────────────────────── */
+.diag-actions {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 4px;
+  flex-wrap: wrap;
+}
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 13px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+}
+.action-btn:hover { border-color: var(--navy); color: var(--navy); background: var(--bg) }
+.action-btn.copied { background: rgba(26,122,58,.08); border-color: rgba(26,122,58,.35); color: #0f4a22 }
+
+/* ─── About Modal ──────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18,56,91,.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s;
+}
+.modal-overlay.open { opacity:1; pointer-events:auto }
+.modal-box {
+  background: var(--white);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 700px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(20px) scale(.98);
+  transition: transform .22s;
+  overflow: hidden;
+}
+.modal-overlay.open .modal-box { transform: translateY(0) scale(1) }
+.modal-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  background: var(--navy);
+  flex-shrink: 0;
+}
+.modal-hdr-text {}
+.modal-hdr-title { font-size:15px; font-weight:600; color:#fff; letter-spacing:-.01em }
+.modal-hdr-sub { font-size:11px; color:rgba(255,255,255,.5); margin-top:2px }
+.modal-close-btn {
+  width:30px; height:30px;
+  border-radius:50%;
+  border:none;
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  font-size:14px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s;
+  flex-shrink:0;
+}
+.modal-close-btn:hover { background:rgba(255,255,255,.22) }
+.modal-body {
+  overflow-y: auto;
+  padding: 24px;
+  flex: 1;
+}
+.about-sec { margin-bottom:22px }
+.about-sec-title {
+  font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:12px;
+  display:flex; align-items:center; gap:6px;
+}
+.about-sec-title::after { content:''; flex:1; height:1px; background:var(--border) }
+.about-resource {
+  background:var(--bg); border:1px solid var(--border); border-radius:var(--r-lg);
+  padding:12px 14px; margin-bottom:8px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.about-resource-info {}
+.about-resource-name { font-size:13px; font-weight:600; color:var(--text) }
+.about-resource-desc { font-size:11px; color:var(--muted); margin-top:2px }
+.about-link {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:6px 12px; background:var(--navy); color:#fff;
+  border-radius:var(--r-md); font-size:11px; font-weight:500;
+  text-decoration:none; white-space:nowrap; transition:background .15s;
+}
+.about-link:hover { background:var(--blue) }
+.about-features { display:grid; grid-template-columns:1fr 1fr; gap:8px }
+.about-feat {
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:10px 12px;
+}
+.about-feat strong { font-size:12px; color:var(--navy); display:block; margin-bottom:2px }
+.about-feat span { font-size:11px; color:var(--muted) }
+.about-algo-item { display:flex; gap:10px; margin-bottom:10px; align-items:flex-start }
+.about-algo-num {
+  width:20px; height:20px; border-radius:50%;
+  background:var(--navy); color:#fff;
+  font-size:10px; font-weight:600;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; margin-top:1px;
+}
+.about-algo-body { font-size:12.5px; color:var(--text); line-height:1.5 }
+.about-algo-body b { color:var(--navy) }
+.about-formula {
+  font-family:var(--mono); font-size:11px;
+  background:var(--navy10); padding:5px 9px;
+  border-radius:var(--r-sm); color:var(--navy);
+  margin-top:4px; line-height:1.7; display:block;
+}
+.about-ref-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px }
+.about-ref-item {
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:8px 10px;
+}
+.about-ref-label { font-size:10px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.05em }
+.about-ref-val { font-family:var(--mono); font-size:12px; color:var(--navy); font-weight:500; margin-top:2px }
+.about-disclaimer {
+  background:rgba(222,23,56,.06); border:1px solid rgba(222,23,56,.2);
+  border-radius:var(--r-md); padding:11px 14px;
+  font-size:12px; color:#8b0f22; line-height:1.5;
+}
+@media (max-width:600px) {
+  .about-features { grid-template-columns:1fr }
+  .about-ref-grid { grid-template-columns:1fr 1fr }
+  .about-resource { flex-direction:column; align-items:flex-start }
+}
+
+/* ─── PWA Install Prompt ───────────────────────────────────── */
+.pwa-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--navy);
+  color: #fff;
+  border-radius: var(--r-lg);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-lg);
+  z-index: 300;
+  font-size: 13px;
+  max-width: 460px;
+  width: calc(100% - 40px);
+  opacity: 0;
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+  pointer-events: none;
+}
+.pwa-bar.show { transform: translateX(-50%) translateY(0); opacity:1; pointer-events:auto }
+.pwa-bar-text { flex:1 }
+.pwa-bar-text strong { display:block; font-size:13px; font-weight:600 }
+.pwa-bar-text span { font-size:11px; color:rgba(255,255,255,.6) }
+.pwa-install-btn {
+  padding:7px 14px; background:var(--blue); color:#fff;
+  border:none; border-radius:var(--r-md);
+  font-family:var(--font); font-size:12px; font-weight:500;
+  cursor:pointer; white-space:nowrap; transition:background .15s;
+}
+.pwa-install-btn:hover { background:#0190d0 }
+.pwa-dismiss-btn {
+  width:26px; height:26px; border-radius:50%; border:none;
+  background:rgba(255,255,255,.12); color:rgba(255,255,255,.7);
+  font-size:14px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s; flex-shrink:0;
+}
+.pwa-dismiss-btn:hover { background:rgba(255,255,255,.22); color:#fff }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <circle cx="9" cy="9" r="7" stroke="white" stroke-width="1.5"/>
+        <line x1="2" y1="9" x2="16" y2="9" stroke="white" stroke-width="1.5"/>
+        <path d="M9 2 Q13 9 9 16" stroke="white" stroke-width="1" fill="none"/>
+      </svg>
+    </div>
+    <div>
+      <div class="topbar-title">Acid-Base Analyser</div>
+      <div class="topbar-sub">ABG Diagnostic Tool</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="topbar-about-btn" onclick="openAbout()">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.4"/><line x1="6.5" y1="6" x2="6.5" y2="9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r=".75" fill="currentColor"/></svg>
+      About
+    </button>
+    <div class="topbar-badge">Atef Radwan</div>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- ─── SIDEBAR ──────────────────────────────────────────── -->
+<aside class="sidebar">
+
+  <div class="section-label">Primary ABG</div>
+
+  <div class="slider-row" id="row-pH">
+    <div class="slider-header">
+      <span class="slider-label">pH <span class="slider-unit">—</span></span>
+      <input type="number" class="num-input" id="ni-pH" min="6.8" max="7.6" step="0.01" value="7.27">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-pH"></div>
+        <div class="range-fill" id="rf-pH"></div>
+      </div>
+      <input type="range" id="sl-pH" min="6.80" max="7.60" step="0.01" value="7.27">
+    </div>
+    <div class="range-minmax"><span>6.80</span><span>Normal 7.35–7.45</span><span>7.60</span></div>
+  </div>
+
+  <div class="slider-row" id="row-pco2">
+    <div class="slider-header">
+      <span class="slider-label">PaCO₂ <span class="slider-unit">mm Hg</span></span>
+      <input type="number" class="num-input" id="ni-pco2" min="8" max="113" step="0.25" value="39.8">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-pco2"></div>
+        <div class="range-fill" id="rf-pco2"></div>
+      </div>
+      <input type="range" id="sl-pco2" min="8" max="113" step="0.25" value="39.75">
+    </div>
+    <div class="range-minmax"><span>8</span><span>Normal 35–45</span><span>113</span></div>
+  </div>
+
+  <div class="slider-row" id="row-hco3">
+    <div class="slider-header">
+      <span class="slider-label">HCO₃⁻ <span class="slider-unit">mmol/L</span></span>
+      <input type="number" class="num-input" id="ni-hco3" min="2" max="46" step="0.1" value="17.6">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-hco3"></div>
+        <div class="range-fill" id="rf-hco3"></div>
+      </div>
+      <input type="range" id="sl-hco3" min="2" max="46" step="0.1" value="17.6">
+    </div>
+    <div class="range-minmax"><span>2</span><span>Normal 22–28</span><span>46</span></div>
+  </div>
+
+  <div class="section-label">Electrolytes</div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-label">Na⁺ <span class="slider-unit">mmol/L</span></span>
+      <input type="number" class="num-input" id="ni-na" min="110" max="165" step="1" value="125">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-na"></div>
+        <div class="range-fill" id="rf-na"></div>
+      </div>
+      <input type="range" id="sl-na" min="110" max="165" step="1" value="125">
+    </div>
+    <div class="range-minmax"><span>110</span><span>Normal 136–145</span><span>165</span></div>
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-label">Cl⁻ <span class="slider-unit">mmol/L</span></span>
+      <input type="number" class="num-input" id="ni-cl" min="89" max="135" step="1" value="103">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-cl"></div>
+        <div class="range-fill" id="rf-cl"></div>
+      </div>
+      <input type="range" id="sl-cl" min="89" max="135" step="1" value="103">
+    </div>
+    <div class="range-minmax"><span>89</span><span>Normal 98–107</span><span>135</span></div>
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-label">Albumin <span class="slider-unit">g/L</span></span>
+      <input type="number" class="num-input" id="ni-alb" min="11" max="44" step="1" value="29">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-alb"></div>
+        <div class="range-fill" id="rf-alb"></div>
+      </div>
+      <input type="range" id="sl-alb" min="11" max="44" step="1" value="29">
+    </div>
+    <div class="range-minmax"><span>11</span><span>Normal 35–50</span><span>44</span></div>
+  </div>
+
+  <div class="section-label">SIG Inputs</div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-label">K⁺ <span class="slider-unit">mmol/L</span></span>
+      <input type="number" class="num-input" id="ni-k" min="1.5" max="8.5" step="0.1" value="4.4">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-k"></div>
+        <div class="range-fill" id="rf-k"></div>
+      </div>
+      <input type="range" id="sl-k" min="1.5" max="8.5" step="0.1" value="4.4">
+    </div>
+    <div class="range-minmax"><span>1.5</span><span>Normal 3.5–5</span><span>8.5</span></div>
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-label">Ca²⁺ <span class="slider-unit">mmol/L</span></span>
+      <input type="number" class="num-input" id="ni-ca" min="0.5" max="3.0" step="0.05" value="1.0">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-ca"></div>
+        <div class="range-fill" id="rf-ca"></div>
+      </div>
+      <input type="range" id="sl-ca" min="0.5" max="3.0" step="0.05" value="1.0">
+    </div>
+    <div class="range-minmax"><span>0.5</span><span>Normal 1.1–1.4</span><span>3.0</span></div>
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-label">Mg²⁺ <span class="slider-unit">mmol/L</span></span>
+      <input type="number" class="num-input" id="ni-mg" min="0.3" max="3.0" step="0.05" value="1.0">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-mg"></div>
+        <div class="range-fill" id="rf-mg"></div>
+      </div>
+      <input type="range" id="sl-mg" min="0.3" max="3.0" step="0.05" value="1.0">
+    </div>
+    <div class="range-minmax"><span>0.3</span><span>Normal 0.7–1.0</span><span>3.0</span></div>
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-label">Lactate <span class="slider-unit">mmol/L</span></span>
+      <input type="number" class="num-input" id="ni-lac" min="0.2" max="15" step="0.1" value="2.5">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-lac"></div>
+        <div class="range-fill" id="rf-lac"></div>
+      </div>
+      <input type="range" id="sl-lac" min="0.2" max="15" step="0.1" value="2.5">
+    </div>
+    <div class="range-minmax"><span>0.2</span><span>Normal &lt;2.0</span><span>15</span></div>
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-label">PO₄ <span class="slider-unit">mmol/L</span></span>
+      <input type="number" class="num-input" id="ni-po4" min="0.2" max="3.0" step="0.05" value="1.2">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-po4"></div>
+        <div class="range-fill" id="rf-po4"></div>
+      </div>
+      <input type="range" id="sl-po4" min="0.2" max="3.0" step="0.05" value="1.2">
+    </div>
+    <div class="range-minmax"><span>0.2</span><span>Normal 0.8–1.4</span><span>3.0</span></div>
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-label">+ve Std Base Deficit <span class="slider-unit">mmol/L</span></span>
+      <input type="number" class="num-input" id="ni-sbd" min="0" max="30" step="0.1" value="7.8">
+    </div>
+    <div class="slider-track">
+      <div class="range-bar">
+        <div class="range-normal" id="rn-sbd"></div>
+        <div class="range-fill" id="rf-sbd"></div>
+      </div>
+      <input type="range" id="sl-sbd" min="0" max="30" step="0.1" value="7.8">
+    </div>
+    <div class="range-minmax"><span>0</span><span>Must be +ve</span><span>30</span></div>
+  </div>
+
+  <div class="section-label">Options</div>
+
+  <div id="urc-slider-block" style="display:none;margin-bottom:14px;padding:12px 14px;background:rgba(222,23,56,.06);border:1.5px solid rgba(222,23,56,.35);border-radius:10px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8b0f22" stroke-width="1.4"/><line x1="7" y1="4" x2="7" y2="7.5" stroke="#8b0f22" stroke-width="1.6" stroke-linecap="round"/><circle cx="7" cy="9.5" r=".85" fill="#8b0f22"/></svg>
+      <span style="font-size:11px;font-weight:600;color:#8b0f22;letter-spacing:.05em;text-transform:uppercase">Required for this diagnosis</span>
+    </div>
+    <div class="slider-row" style="margin-bottom:0">
+      <div class="slider-header">
+        <span class="slider-label">Ur. Chloride <span class="slider-unit">mmol/L</span></span>
+        <input type="number" class="num-input" id="ni-urc" min="0" max="80" step="1" value="20">
+      </div>
+      <div class="slider-track">
+        <div class="range-bar">
+          <div class="range-fill" id="rf-urc"></div>
+        </div>
+        <input type="range" id="sl-urc" min="0" max="80" step="1" value="20">
+      </div>
+      <div class="range-minmax"><span>0</span><span>&lt;20 responsive · ≥20 resistant</span><span>80</span></div>
+    </div>
+  </div>
+
+  <label class="checkbox-row" id="chk-cco2-row">
+    <input type="checkbox" id="chk-cco2">
+    <div class="checkbox-box">
+      <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span class="checkbox-text">Chronic CO₂ Retention</span>
+  </label>
+
+  <label class="checkbox-row" id="chk-exac-row">
+    <input type="checkbox" id="chk-exac">
+    <div class="checkbox-box">
+      <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span class="checkbox-text">Exacerbation</span>
+  </label>
+
+  <div class="section-label">Presets</div>
+  <div class="presets-grid" id="presets-grid"></div>
+
+</aside>
+
+<!-- ─── MAIN ────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- UrC required prompt -->
+  <div class="ph-warning hidden" id="urc-required" style="border-color:rgba(222,23,56,.35);background:rgba(222,23,56,.06)">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8b0f22" stroke-width="1.3"/><line x1="7" y1="4" x2="7" y2="7.5" stroke="#8b0f22" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="9.5" r=".8" fill="#8b0f22"/></svg>
+    <span>Urinary chloride is required to complete this diagnosis — scroll up in the left panel to enter it.</span>
+  </div>
+
+  <!-- pH warning -->
+  <div class="ph-warning hidden" id="ph-warning">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8b0f22" stroke-width="1.3"/><line x1="7" y1="4" x2="7" y2="7.5" stroke="#8b0f22" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="9.5" r=".8" fill="#8b0f22"/></svg>
+    <span id="ph-warning-text"></span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('abg')">ABG Diagnosis</button>
+    <button class="tab-btn" onclick="switchTab('sig')">SIG / BDE Analysis</button>
+    <button class="tab-btn" onclick="switchTab('batch')">Batch Import</button>
+  </div>
+
+  <!-- ── ABG TAB ─── -->
+  <div class="tab-panel active" id="tab-abg">
+
+    <!-- Diagnosis card -->
+    <div class="diag-card neutral" id="diag-card">
+      <div class="diag-tag neutral" id="diag-tag">Awaiting input</div>
+      <div class="diag-primary" id="diag-primary">—</div>
+      <div class="diag-ag" id="diag-ag"></div>
+
+      <!-- Action buttons — shown once a real diagnosis is present -->
+      <div class="diag-actions" id="diag-actions" style="display:none">
+        <button class="action-btn" id="copy-diag-btn" onclick="copyDiagnosis()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="4" y="1" width="7" height="8.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="2.5" width="7" height="8.5" rx="1.2" stroke="currentColor" stroke-width="1.3" fill="white"/></svg>
+          Copy
+        </button>
+        <button class="action-btn" onclick="exportSinglePDF()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3.5 6l2.5 2.5L8.5 6M1.5 10.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Export PDF
+        </button>
+      </div>
+
+      <div class="explanation-box">
+        <div class="explanation-title">Decision path</div>
+        <ul class="step-list" id="step-list"></ul>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="card">
+      <div class="card-title"><span class="card-title-dot"></span>Calculated values</div>
+      <div class="metrics-grid">
+        <div class="metric-tile" id="mt-calcph">
+          <div class="metric-name">Calc. pH</div>
+          <div class="metric-val" id="mv-calcph">—</div>
+          <div class="metric-sub" id="ms-calcph">Henderson-Hasselbalch</div>
+        </div>
+        <div class="metric-tile" id="mt-ag">
+          <div class="metric-name">Corr. AG</div>
+          <div class="metric-val" id="mv-ag">—</div>
+          <div class="metric-sub">Na−(Cl+HCO₃)+0.25×(44−Alb)</div>
+        </div>
+        <div class="metric-tile" id="mt-hg">
+          <div class="metric-name">HCO₃ gap</div>
+          <div class="metric-val" id="mv-hg">—</div>
+          <div class="metric-sub">Na−Cl−36 (delta-delta)</div>
+        </div>
+        <div class="metric-tile" id="mt-be">
+          <div class="metric-name">SID gap</div>
+          <div class="metric-val" id="mv-sidgap">—</div>
+          <div class="metric-sub">SIDapp − SIDeff</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Range indicators -->
+    <div class="card">
+      <div class="card-title"><span class="card-title-dot"></span>Reference ranges</div>
+      <div class="range-indicators">
+        <div class="ri-item">
+          <div class="ri-label">pH (7.35–7.45)</div>
+          <div class="ri-bar"><div class="range-normal" id="rin-pH"></div><div class="ri-fill" id="rif-pH"></div><div class="ri-marker" id="rim-pH"></div></div>
+          <div class="ri-status" id="ris-pH">—</div>
+        </div>
+        <div class="ri-item">
+          <div class="ri-label">PaCO₂ (35–45 mm Hg)</div>
+          <div class="ri-bar"><div class="range-normal" id="rin-pco2"></div><div class="ri-fill" id="rif-pco2"></div><div class="ri-marker" id="rim-pco2"></div></div>
+          <div class="ri-status" id="ris-pco2">—</div>
+        </div>
+        <div class="ri-item">
+          <div class="ri-label">HCO₃⁻ (22–28 mmol/L)</div>
+          <div class="ri-bar"><div class="range-normal" id="rin-hco3"></div><div class="ri-fill" id="rif-hco3"></div><div class="ri-marker" id="rim-hco3"></div></div>
+          <div class="ri-status" id="ris-hco3">—</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-abg -->
+
+  <!-- ── SIG TAB ─── -->
+  <div class="tab-panel" id="tab-sig">
+    <div class="card">
+      <div class="card-title"><span class="card-title-dot"></span>Strong ion gap &amp; BDE gap</div>
+
+      <div class="sig-grid">
+        <div class="metric-tile" id="sig-k-tile">
+          <div class="metric-name">K⁺</div>
+          <div class="metric-val" id="sig-k-val">—</div>
+          <div class="metric-sub">mmol/L</div>
+        </div>
+        <div class="metric-tile" id="sig-ca-tile">
+          <div class="metric-name">Ca²⁺</div>
+          <div class="metric-val" id="sig-ca-val">—</div>
+          <div class="metric-sub">mmol/L</div>
+        </div>
+        <div class="metric-tile" id="sig-mg-tile">
+          <div class="metric-name">Mg²⁺</div>
+          <div class="metric-val" id="sig-mg-val">—</div>
+          <div class="metric-sub">mmol/L</div>
+        </div>
+        <div class="metric-tile" id="sig-lac-tile">
+          <div class="metric-name">Lactate</div>
+          <div class="metric-val" id="sig-lac-val">—</div>
+          <div class="metric-sub">mmol/L</div>
+        </div>
+        <div class="metric-tile" id="sig-po4-tile">
+          <div class="metric-name">PO₄</div>
+          <div class="metric-val" id="sig-po4-val">—</div>
+          <div class="metric-sub">mmol/L</div>
+        </div>
+        <div class="metric-tile" id="sig-sbd-tile">
+          <div class="metric-name">+ve Std BD</div>
+          <div class="metric-val" id="sig-sbd-val">—</div>
+          <div class="metric-sub">mmol/L</div>
+        </div>
+      </div>
+
+      <div class="sig-grid-results">
+        <div class="sig-result" id="sig-result-box">
+          <div class="sig-result-label">SIG (XA)</div>
+          <div class="sig-result-val" id="sig-val">—</div>
+          <div class="sig-result-sub" id="sig-interp">—</div>
+        </div>
+        <div class="sig-result" style="background:var(--blue)" id="bde-result-box">
+          <div class="sig-result-label">BDE Gap</div>
+          <div class="sig-result-val" id="bde-val">—</div>
+          <div class="sig-result-sub" id="bde-interp">—</div>
+        </div>
+      </div>
+
+      <div class="sig-note" id="sig-note">
+        SIG = (Na⁺ + Ca²⁺ + Mg²⁺ + K⁺) − (Cl⁻ + Lactate) − (HCO₃⁻ + Albumin × (0.123 × pH − 0.631) + PO₄ × (0.309 × pH − 0.469))<br>
+        BDE Gap = −(Std Base Deficit) − (Na⁺ − Cl⁻ − 38) + 0.25 × (42 − Albumin)
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="explanation-title" style="margin-bottom:8px">Interpretation</div>
+        <ul class="step-list" id="sig-steps"></ul>
+      </div>
+    </div>
+  </div><!-- /tab-sig -->
+
+
+  <!-- ── BATCH TAB ─── -->
+  <div class="tab-panel" id="tab-batch">
+
+    <!-- Step 1 – Download template -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title"><span class="card-title-dot"></span>Step 1 — download template</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">Download the Excel template, fill in your cases (one per row), then import it below. All columns with a <span style="color:#8b0f22;font-weight:500">*</span> are required for the ABG diagnosis; electrolyte and SIG columns are used where provided.</p>
+      <button onclick="downloadTemplate()" style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:var(--navy);color:#fff;border:none;border-radius:var(--r-md);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 7l3 3 3-3M2 11h10" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download Excel template (5 cases)
+      </button>
+    </div>
+
+    <!-- Step 2 – Import -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title"><span class="card-title-dot"></span>Step 2 — import completed file</div>
+      <div id="drop-zone" onclick="document.getElementById('file-input').click()" style="border:2px dashed var(--border);border-radius:var(--r-lg);padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="margin:0 auto 10px;display:block"><rect x="4" y="4" width="20" height="20" rx="4" stroke="#6b88a2" stroke-width="1.5"/><path d="M14 9v10M10 15l4 4 4-4" stroke="#6b88a2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="font-size:13px;font-weight:500;color:var(--muted)">Click to choose file or drag &amp; drop</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">.xlsx or .csv accepted</div>
+      </div>
+      <input type="file" id="file-input" accept=".xlsx,.csv" style="display:none" onchange="handleFileImport(this.files[0])">
+      <div id="import-status" style="display:none;margin-top:10px;padding:9px 12px;border-radius:var(--r-md);font-size:12px"></div>
+    </div>
+
+    <!-- Step 3 – Results -->
+    <div id="batch-results-section" style="display:none">
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin:0"><span class="card-title-dot"></span>Results — <span id="batch-case-count">0</span> cases</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="exportBatchExcel()" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--navy);color:#fff;border:none;border-radius:var(--r-md);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer">
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 7l3 3 3-3M2 11h10" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Export Excel
+            </button>
+            <button onclick="exportBatchPDF()" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer">
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 7l3 3 3-3M2 11h10" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Export PDF
+            </button>
+          </div>
+        </div>
+        <!-- Summary pills -->
+        <div id="batch-summary-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+        <!-- Cases accordion -->
+        <div id="batch-cases-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /tab-batch -->
+</main>
+</div>
+
+<!-- ─── ABOUT MODAL ─────────────────────────────────────────── -->
+<div class="modal-overlay" id="about-modal" onclick="closeAboutOutside(event)">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-label="About Acid-Base Analyser">
+    <div class="modal-hdr">
+      <div class="modal-hdr-text">
+        <div class="modal-hdr-title">About Acid-Base Analyser</div>
+        <div class="modal-hdr-sub">ABG Diagnostic Tool — Atef Radwan</div>
+      </div>
+      <button class="modal-close-btn" onclick="closeAbout()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Resources -->
+      <div class="about-sec">
+        <div class="about-sec-title">Educational Resources</div>
+        <div class="about-resource">
+          <div class="about-resource-info">
+            <div class="about-resource-name">Complete Medical Guide (PDF)</div>
+            <div class="about-resource-desc">Comprehensive documentation — acid-base physiology, clinical cases, formulas</div>
+          </div>
+          <a class="about-link" href="https://drive.google.com/file/d/1-YRwh_9Vd2FvWdmzjUpLMSadsuRv52eV/edit" target="_blank" rel="noopener">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v6M3 5l2.5 2.5L8 5M1.5 9.5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            View PDF
+          </a>
+        </div>
+        <div class="about-resource">
+          <div class="about-resource-info">
+            <div class="about-resource-name">Diagnosis Algorithm (Presentation)</div>
+            <div class="about-resource-desc">Step-by-step decision trees and diagnostic flowcharts</div>
+          </div>
+          <a class="about-link" href="https://drive.google.com/file/d/1UgsqSMKz26DN8JXzpNqevFyvEthrhH0L/edit" target="_blank" rel="noopener">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v6M3 5l2.5 2.5L8 5M1.5 9.5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            View Slides
+          </a>
+        </div>
+      </div>
+
+      <!-- Key Features -->
+      <div class="about-sec">
+        <div class="about-sec-title">Key Features</div>
+        <div class="about-features">
+          <div class="about-feat"><strong>Real-time Diagnosis</strong><span>Instant ABG interpretation as you adjust sliders</span></div>
+          <div class="about-feat"><strong>Compensation Logic</strong><span>Acute/chronic multipliers, Winters' formula, met. alkalosis range</span></div>
+          <div class="about-feat"><strong>Anion Gap Analysis</strong><span>Albumin-corrected AG with delta-delta (HCO₃ gap)</span></div>
+          <div class="about-feat"><strong>SIG / BDE Analysis</strong><span>Strong Ion Gap and Base Deficit Excess gap calculation</span></div>
+          <div class="about-feat"><strong>Chronic CO₂ Logic</strong><span>4 special branches for CCO₂ retention and exacerbation</span></div>
+          <div class="about-feat"><strong>Batch Import</strong><span>Import Excel/CSV for multi-case analysis with PDF export</span></div>
+        </div>
+      </div>
+
+      <!-- Algorithm Steps -->
+      <div class="about-sec">
+        <div class="about-sec-title">How the Diagnosis Works</div>
+
+        <div class="about-algo-item">
+          <div class="about-algo-num">1</div>
+          <div class="about-algo-body">
+            <b>pH Validation</b> — Henderson-Hasselbalch check<br>
+            <code class="about-formula">Calc. pH = 6.1 + log₁₀( HCO₃⁻ ÷ (0.03 × PaCO₂) )
+If |Calc. pH − Entered pH| &gt; 0.1 → inputs inconsistent</code>
+          </div>
+        </div>
+
+        <div class="about-algo-item">
+          <div class="about-algo-num">2</div>
+          <div class="about-algo-body">
+            <b>Direction</b> — pH &lt; 7.40 → acidaemia · pH ≥ 7.40 → alkalaemia
+          </div>
+        </div>
+
+        <div class="about-algo-item">
+          <div class="about-algo-num">3</div>
+          <div class="about-algo-body">
+            <b>Respiratory Acidosis</b> — PaCO₂ ≥ 45, pH &lt; 7.40<br>
+            <code class="about-formula">pH &lt;7.30 or &gt;7.50 → Acute (×1) · pH 7.30–7.50 → Chronic (×4)
+Expected HCO₃ = 22 − ((40 − PaCO₂)/10) × multiplier  (±20%)
+Below → + Met. Acidosis · Above → + Met. Alkalosis</code>
+          </div>
+        </div>
+
+        <div class="about-algo-item">
+          <div class="about-algo-num">4</div>
+          <div class="about-algo-body">
+            <b>Metabolic Acidosis</b> — PaCO₂ &lt; 45, pH &lt; 7.40 · Winters' formula<br>
+            <code class="about-formula">Expected PaCO₂ = 1.5 × HCO₃⁻ + 8  (±10%)
+Below expected → + Resp. Alkalosis · Above → + Resp. Acidosis</code>
+          </div>
+        </div>
+
+        <div class="about-algo-item">
+          <div class="about-algo-num">5</div>
+          <div class="about-algo-body">
+            <b>Metabolic Alkalosis</b> — PaCO₂ ≥ 35, pH ≥ 7.40<br>
+            <code class="about-formula">Expected PaCO₂ = 0.7 × HCO₃⁻ + 21  (±10%)
+Urinary Cl⁻ &lt; 20 → chloride-responsive · ≥ 20 → chloride-resistant</code>
+          </div>
+        </div>
+
+        <div class="about-algo-item">
+          <div class="about-algo-num">6</div>
+          <div class="about-algo-body">
+            <b>Respiratory Alkalosis</b> — PaCO₂ &lt; 35, pH ≥ 7.40<br>
+            <code class="about-formula">pH &gt;7.50 → Acute (×2) · pH 7.40–7.50 → Chronic (×5)</code>
+          </div>
+        </div>
+
+        <div class="about-algo-item">
+          <div class="about-algo-num">7</div>
+          <div class="about-algo-body">
+            <b>Anion Gap</b> (for all metabolic acidosis diagnoses)<br>
+            <code class="about-formula">Corr. AG = Na⁺ − (Cl⁻ + HCO₃⁻) + 0.25 × (44 − Albumin)
+AG ≤ 12 → NAGA · AG &gt; 12 → HAGMA
+HCO₃ gap = Na⁺ − Cl⁻ − 36 → delta-delta (HAGMA + met.alk or + NAGA)</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reference Ranges -->
+      <div class="about-sec">
+        <div class="about-sec-title">Reference Ranges</div>
+        <div class="about-ref-grid">
+          <div class="about-ref-item"><div class="about-ref-label">pH</div><div class="about-ref-val">7.35 – 7.45</div></div>
+          <div class="about-ref-item"><div class="about-ref-label">PaCO₂</div><div class="about-ref-val">35 – 45 mm Hg</div></div>
+          <div class="about-ref-item"><div class="about-ref-label">HCO₃⁻</div><div class="about-ref-val">22 – 28 mmol/L</div></div>
+          <div class="about-ref-item"><div class="about-ref-label">Na⁺</div><div class="about-ref-val">136 – 145 mmol/L</div></div>
+          <div class="about-ref-item"><div class="about-ref-label">Cl⁻</div><div class="about-ref-val">98 – 107 mmol/L</div></div>
+          <div class="about-ref-item"><div class="about-ref-label">Albumin</div><div class="about-ref-val">35 – 50 g/L</div></div>
+          <div class="about-ref-item"><div class="about-ref-label">Urine Cl⁻</div><div class="about-ref-val">&lt;20 responsive</div></div>
+          <div class="about-ref-item"><div class="about-ref-label">SIG (XA)</div><div class="about-ref-val">≤ 2 mmol/L</div></div>
+          <div class="about-ref-item"><div class="about-ref-label">Lactate</div><div class="about-ref-val">&lt; 2.0 mmol/L</div></div>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="about-disclaimer">
+        <strong>⚕️ Medical Disclaimer</strong> — This tool is for educational and clinical support only. Always integrate results with the full clinical picture, patient history, and your professional judgment. Not a substitute for direct patient care.
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── PWA Install Prompt ──────────────────────────────────── -->
+<div class="pwa-bar" id="pwa-bar">
+  <div class="pwa-bar-text">
+    <strong>Install Acid-Base Analyser</strong>
+    <span>Add to home screen for offline access</span>
+  </div>
+  <button class="pwa-install-btn" onclick="installPWA()">Install</button>
+  <button class="pwa-dismiss-btn" onclick="dismissPWA()" aria-label="Dismiss">✕</button>
+</div>
+
+<script>
+const ph1=7.3,ph2=7.5,p2=45;
+
+const PRESETS=[
+  {name:'Normal ABG',      detail:'pH 7.40  PCO₂ 40  HCO₃ 24', pH:7.40,pco2:40,hco3:24,na:140,cl:102,alb:40,k:4.0,ca:1.2,mg:0.8,lac:1.0,po4:1.0,sbd:1.0},
+  {name:'Resp. acidosis',  detail:'pH 7.20  PCO₂ 65  HCO₃ 24', pH:7.20,pco2:65,hco3:24,na:138,cl:102,alb:38,k:4.0,ca:1.2,mg:0.8,lac:1.2,po4:1.1,sbd:2.0},
+  {name:'Resp. alkalosis', detail:'pH 7.52  PCO₂ 28  HCO₃ 22', pH:7.52,pco2:28,hco3:22,na:138,cl:103,alb:38,k:3.8,ca:1.2,mg:0.8,lac:1.0,po4:1.0,sbd:1.5},
+  {name:'Met. acidosis',   detail:'pH 7.27  PCO₂ 40  HCO₃ 17', pH:7.27,pco2:39.75,hco3:17.6,na:125,cl:103,alb:29,k:4.4,ca:1.0,mg:1.0,lac:2.5,po4:1.2,sbd:7.8},
+  {name:'Met. alkalosis',  detail:'pH 7.51  PCO₂ 48  HCO₃ 36', pH:7.51,pco2:48,hco3:36,na:142,cl:96,alb:38,k:3.2,ca:1.1,mg:0.8,lac:1.0,po4:1.0,sbd:1.0},
+  {name:'Mixed acid+alk',  detail:'pH 7.44  PCO₂ 28  HCO₃ 18', pH:7.44,pco2:27.75,hco3:18.2,na:135,cl:110,alb:32,k:3.7,ca:1.1,mg:0.9,lac:1.6,po4:1.1,sbd:4.2},
+];
+
+let activePreset=-1;
+
+function buildPresets(){
+  const grid=document.getElementById('presets-grid');
+  grid.innerHTML=PRESETS.map((p,i)=>`
+    <button class="preset-btn" id="pb-${i}" onclick="applyPreset(${i})">
+      <span class="preset-name">${p.name}</span>
+      <span class="preset-detail">${p.detail}</span>
+    </button>`).join('');
+}
+
+function applyPreset(i){
+  const p=PRESETS[i];
+  setSlider('sl-pH',p.pH);
+  setSlider('sl-pco2',p.pco2);
+  setSlider('sl-hco3',p.hco3);
+  setSlider('sl-na',p.na);
+  setSlider('sl-cl',p.cl);
+  setSlider('sl-alb',p.alb);
+  setSlider('sl-k',p.k);
+  setSlider('sl-ca',p.ca);
+  setSlider('sl-mg',p.mg);
+  setSlider('sl-lac',p.lac);
+  setSlider('sl-po4',p.po4);
+  setSlider('sl-sbd',p.sbd);
+  if(activePreset>=0) document.getElementById('pb-'+activePreset)?.classList.remove('active');
+  document.getElementById('pb-'+i)?.classList.add('active');
+  activePreset=i;
+  update();
+}
+
+function setSlider(id,val){
+  document.getElementById(id).value=val;
+  const niId='ni-'+id.replace(/^sl-/,'');
+  const ni=document.getElementById(niId);
+  if(ni){ const sl=document.getElementById(id); const dp=sl.step&&sl.step.includes('.')?sl.step.split('.')[1].length:0; ni.value=dp===0?Math.round(val):parseFloat(val).toFixed(dp); }
+}
+function g(id){return parseFloat(document.getElementById(id).value)}
+
+function pct(val,min,max){return Math.max(0,Math.min(100,(val-min)/(max-min)*100))}
+
+function updateSliderVisual(slId,rfId,rnId,vvId,min,max,nLo,nHi,dp=2){
+  const val=g(slId);
+  const p=pct(val,min,max);
+  const inRange=(val>=nLo&&val<=nHi);
+  const fill=document.getElementById(rfId);
+  const norm=document.getElementById(rnId);
+  // Sync the number input (vvId is now the num-input id via the ni- prefix)
+  const niId='ni-'+vvId.replace(/^vv-/,'');
+  const ni=document.getElementById(niId);
+  if(fill){fill.style.cssText=`left:0;width:${p.toFixed(1)}%;background:${inRange?'#1a7a3a':'#de1738'}`;}
+  if(norm){
+    const nLeft=pct(nLo,min,max);
+    const nWidth=pct(nHi,min,max)-nLeft;
+    norm.style.cssText=`left:${nLeft.toFixed(1)}%;width:${nWidth.toFixed(1)}%`;
+  }
+  if(ni&&document.activeElement!==ni){
+    ni.value=dp===0?Math.round(val):val.toFixed(dp);
+    ni.className='num-input '+(inRange?'in':'out');
+  }
+}
+
+function updateRangeIndicator(fillId,markId,statusId,val,min,max,nLo,nHi,label,dp=2){
+  const f=document.getElementById(fillId);
+  const m=document.getElementById(markId);
+  const s=document.getElementById(statusId);
+  const inRange=(val>=nLo&&val<=nHi);
+  const p=pct(val,min,max);
+  if(f) f.style.cssText=`width:${p.toFixed(1)}%;background:${inRange?'#1a7a3a':'#de1738'}`;
+  if(m) m.style.cssText=`left:${p.toFixed(1)}%;background:${inRange?'#0f4a22':'#8b0f22'}`;
+  if(s){
+    const dir=val<nLo?'↓ low':val>nHi?'↑ high':'✓ normal';
+    s.textContent=`${val.toFixed(dp)} ${dir}`;
+    s.className='ri-status '+(inRange?'ok':'out');
+  }
+}
+
+function step(num,cls,html){
+  return `<li class="step-item"><div class="step-num ${cls}">${num}</div><div class="step-body">${html}</div></li>`;
+}
+function mono(v){return `<span class="mono">${v}</span>`}
+
+function update(){
+  const pH=g('sl-pH'), pv=g('sl-pco2'), hv=g('sl-hco3');
+  const nav=g('sl-na'), clv=g('sl-cl'), alb=g('sl-alb');
+  const K=g('sl-k'), Ca=g('sl-ca'), Mg=g('sl-mg'), lac=g('sl-lac'), po4=g('sl-po4'), sbd=g('sl-sbd');
+  const cco2=document.getElementById('chk-cco2').checked;
+  const exac=document.getElementById('chk-exac').checked;
+
+  updateSliderVisual('sl-pH','rf-pH','rn-pH','vv-pH',6.80,7.60,7.35,7.45,2);
+  updateSliderVisual('sl-pco2','rf-pco2','rn-pco2','vv-pco2',8,113,35,45,1);
+  updateSliderVisual('sl-hco3','rf-hco3','rn-hco3','vv-hco3',2,46,22,28,1);
+  updateSliderVisual('sl-na','rf-na','rn-na','vv-na',110,165,136,145,0);
+  updateSliderVisual('sl-cl','rf-cl','rn-cl','vv-cl',89,135,98,107,0);
+  updateSliderVisual('sl-alb','rf-alb','rn-alb','vv-alb',11,44,35,50,0);
+  updateSliderVisual('sl-k','rf-k','rn-k','vv-k',1.5,8.5,3.5,5.0,1);
+  updateSliderVisual('sl-ca','rf-ca','rn-ca','vv-ca',0.5,3.0,1.1,1.4,2);
+  updateSliderVisual('sl-mg','rf-mg','rn-mg','vv-mg',0.3,3.0,0.7,1.0,2);
+  updateSliderVisual('sl-lac','rf-lac','rn-lac','vv-lac',0.2,15,0,2.0,1);
+  updateSliderVisual('sl-po4','rf-po4','rn-po4','vv-po4',0.2,3.0,0.8,1.4,2);
+  updateSliderVisual('sl-sbd','rf-sbd','rn-sbd','vv-sbd',0,30,0,2,1);
+
+  updateRangeIndicator('rif-pH','rim-pH','ris-pH',pH,6.80,7.60,7.35,7.45,'pH',2);
+  updateRangeIndicator('rif-pco2','rim-pco2','ris-pco2',pv,8,113,35,45,'PaCO₂',1);
+  updateRangeIndicator('rif-hco3','rim-hco3','ris-hco3',hv,2,46,22,28,'HCO₃',1);
+
+  const pHc=6.1+Math.log10(hv/(0.03*pv));
+  const diff=Math.abs(pHc-pH);
+  const AG=nav-(clv+hv)+0.25*(44-alb);
+  const HG=nav-clv-36;
+  const wlo=(0.9*(1.5*hv+4)), whi=(1.1*(1.5*hv+12));
+  const mlo=(0.9*(0.7*hv+15)), mhi=(1.1*(0.7*hv+15));
+
+  // pH warning
+  const warn=document.getElementById('ph-warning');
+  if(diff>0.1){
+    warn.classList.remove('hidden');
+    document.getElementById('ph-warning-text').textContent=
+      `Henderson-Hasselbalch check: calculated pH = ${pHc.toFixed(2)}, difference = ${diff.toFixed(2)} — please review inputs`;
+  } else { warn.classList.add('hidden'); }
+
+  // Calculated metrics
+  document.getElementById('mv-calcph').textContent=pHc.toFixed(2);
+  document.getElementById('mv-ag').textContent=AG.toFixed(1);
+  document.getElementById('mv-hg').textContent=HG.toFixed(1);
+  const sid_app=nav+Ca+Mg+K;
+  const sid_eff=hv+alb*(0.123*pH-0.631)+po4*(0.309*pH-0.469);
+  document.getElementById('mv-sidgap').textContent=(sid_app-clv-lac-sid_eff).toFixed(1);
+
+  const mt_ag=document.getElementById('mt-ag');
+  if(AG>12){mt_ag.classList.add('warn');mt_ag.classList.remove('highlight');}
+  else if(AG<=12&&AG>0){mt_ag.classList.remove('warn','highlight');}
+
+  // ── Diagnosis engine ────────────────────────────────
+  let Diag='', AGdiag='', steps=[], diagClass='neutral', tagClass='neutral', tagLabel='Analysing…', needsUrC=false;
+
+  steps.push(step(1,'gray',`<b>pH validity:</b> calculated pH = ${mono(pHc.toFixed(2))}, entered = ${mono(pH.toFixed(2))}, Δ = ${mono(diff.toFixed(2))} ${diff>0.1?'<span style="color:#de1738">— inputs inconsistent</span>':'— consistent ✓'}`));
+
+  // CCO2 special branches
+  if(cco2){
+    if(pH<7.3&&pv<=57&&hv<24&&!exac){
+      Diag='Chronic Respiratory Acidosis + Metabolic Acidosis';
+      diagClass='acidosis';tagClass='acidosis';tagLabel='Mixed acidosis';
+      steps.push(step(2,'red','<b>Chronic CO₂ retention + exacerbation criteria:</b> pH &lt;7.30, PaCO₂ ≤57, HCO₃ &lt;24, no exacerbation flag'));
+      steps.push(step(3,'red','→ Chronic respiratory acidosis with superimposed metabolic acidosis'));
+    } else if(pH<7.3&&pv>2*hv-8&&hv>=30&&exac){
+      Diag='Acute on Top of Chronic Respiratory Acidosis';
+      diagClass='acidosis';tagClass='acidosis';tagLabel='Acute-on-chronic';
+      steps.push(step(2,'red',`<b>Acute-on-chronic criteria:</b> pH &lt;7.30, PaCO₂ ${mono(pv.toFixed(1))} > ${mono((2*hv-8).toFixed(1))} (2×HCO₃−8), HCO₃ ≥30`));
+    } else if(pH<7.3&&pv>57&&hv<24&&exac){
+      Diag='Acute on Chronic Respiratory Acidosis + Metabolic Acidosis';
+      diagClass='acidosis';tagClass='acidosis';tagLabel='Mixed acidosis';
+      steps.push(step(2,'red','<b>Acute-on-chronic + met. acidosis:</b> pH &lt;7.30, PaCO₂ >57, HCO₃ &lt;24, exacerbation flagged'));
+    } else if(pH>=7.4){
+      const thresh=0.92*(2*hv-8);
+      const urc=g('sl-urc');
+      const urcEntered=document.getElementById('sl-urc').dataset.entered==='1';
+      const thresh_met=(pv<=thresh);
+      diagClass='alkalosis';tagClass='alkalosis';tagLabel='Mixed alk.';
+      steps.push(step(2,'blue',`<b>Chronic CO₂ + alkalosis:</b> pH ≥7.40, PaCO₂ threshold = ${mono(thresh.toFixed(1))}, actual = ${mono(pv.toFixed(1))}`));
+      if(!urcEntered){
+        Diag='Chronic Respiratory Acidosis + Metabolic Alkalosis (subtype pending)';
+        steps.push(step(3,'red','<b>Urinary chloride required</b> — enter it in the left panel to complete classification'));
+        needsUrC=true;
+      } else {
+        steps.push(step(3,'blue',`Ur. Chloride = ${mono(urc+' mmol/L')} (${urc<20?'< 20 — chloride-responsive':'≥ 20 — chloride-resistant/independent'})`));
+        if(thresh_met){
+          if(urc<20){ Diag='Chronic Respiratory Acidosis + Metabolic Alkalosis (Post-Hypercapnic)'; steps.push(step(4,'blue','PaCO₂ ≤ threshold, Ur.Cl &lt; 20 → <b>Post-Hypercapnic</b> (volume/chloride depletion)')); }
+          else       { Diag='Chronic Respiratory Acidosis + Metabolic Alkalosis (Mixed)'; steps.push(step(4,'blue','PaCO₂ ≤ threshold, Ur.Cl ≥ 20 → <b>Mixed</b> (primary + post-hypercapnic)')); }
+        } else {
+          if(urc>=20){ Diag='Chronic Respiratory Acidosis + Metabolic Alkalosis (Independent, Chloride-Resistant / Diuresis)'; steps.push(step(4,'blue','PaCO₂ > threshold, Ur.Cl ≥ 20 → <b>Independent, chloride-resistant</b> (hyperaldosteronism / diuretics)')); }
+          else       { Diag='Chronic Respiratory Acidosis + Metabolic Alkalosis (Independent, Chloride-Responsive, Extra-Renal Cl⁻ Loss)'; steps.push(step(4,'blue','PaCO₂ > threshold, Ur.Cl &lt; 20 → <b>Independent, chloride-responsive</b> (extra-renal chloride loss)')); }
+        }
+      }
+    }
+  }
+
+  if(!Diag){
+    if(pH>=7.35&&pH<=7.45&&pv>=35&&pv<=45&&hv>=22&&hv<=28){
+      Diag='Normal ABG — Check Anion Gap';
+      diagClass='normal';tagClass='normal';tagLabel='Normal';
+      steps.push(step(2,'green',`All three values within reference range: pH ${mono(pH.toFixed(2))}, PaCO₂ ${mono(pv.toFixed(1))}, HCO₃ ${mono(hv.toFixed(1))}`));
+      steps.push(step(3,'green','<b>Note:</b> AG calculation is a manual clinical step — not auto-triggered for normal ABG'));
+    } else if(pH<7.4){
+      steps.push(step(2,'red',`<b>pH ${pH.toFixed(2)} &lt; 7.40</b> → acidaemia`));
+      tagLabel='Acidosis'; tagClass='acidosis'; diagClass='acidosis';
+      if(pv>=p2){
+        steps.push(step(3,'red',`<b>PaCO₂ ${pv.toFixed(1)} ≥ 45</b> → primary respiratory mechanism (hypercapnia driving acidosis)`));
+        const acute=(pH<ph1||pH>ph2);
+        const mult=acute?1:4;
+        const eq=22-((40-pv)/10)*mult, eq1=28-((40-pv)/10)*mult;
+        steps.push(step(4,'amber',`<b>${acute?'Acute':'Chronic'}:</b> pH ${acute?'outside (< 7.30 or > 7.50)':'within 7.30–7.50'} → multiplier = ${mono(mult)}`));
+        steps.push(step(5,'amber',`Expected HCO₃ range: ${mono(eq.toFixed(1)+' – '+eq1.toFixed(1))} | Actual: ${mono(hv.toFixed(1))}`));
+        if(hv>eq&&hv<eq1){
+          Diag=`Simple ${acute?'Acute':'Chronic'} Respiratory Acidosis`;
+          steps.push(step(6,'red','HCO₃ within expected range → <b>Simple</b> — adequate compensation'));
+        } else if(hv<=eq){
+          Diag=`${acute?'Acute':'Chronic'} Respiratory Acidosis + Metabolic Acidosis`;
+          steps.push(step(6,'red',`HCO₃ ${mono(hv.toFixed(1))} <b>below</b> lower expected ${mono(eq.toFixed(1))} → additional metabolic acidosis`));
+        } else {
+          Diag=`${acute?'Acute':'Chronic'} Respiratory Acidosis + Metabolic Alkalosis`;
+          steps.push(step(6,'blue',`HCO₃ ${mono(hv.toFixed(1))} <b>above</b> upper expected ${mono(eq1.toFixed(1))} → concurrent metabolic alkalosis`));
+        }
+      } else {
+        steps.push(step(3,'amber',`<b>PaCO₂ ${pv.toFixed(1)} &lt; 45</b> → primary metabolic mechanism (bicarbonate deficit)`));
+        const comp=(pH>=ph1&&pH<=ph2)?'Compensated ':((pv>=35&&pv<=45)?'Uncompensated ':'Partially Compensated ');
+        steps.push(step(4,'amber',`<b>${comp.trim()}:</b> pH ${pH>=ph1&&pH<=ph2?`within 7.30–7.50`:`outside 7.30–7.50`}, PaCO₂ ${pv>=35&&pv<=45?'normal':'abnormal'}`));
+        steps.push(step(5,'amber',`Winters' formula → expected PaCO₂: ${mono(wlo.toFixed(1)+' – '+whi.toFixed(1))} | Actual: ${mono(pv.toFixed(1))}`));
+        if(pv>=wlo&&pv<=whi){
+          Diag=comp+'Simple Metabolic Acidosis';
+          steps.push(step(6,'red','PaCO₂ within Winters\' range → <b>simple</b> with appropriate respiratory compensation'));
+        } else if(pv<wlo){
+          Diag=comp+'Metabolic Acidosis + Respiratory Alkalosis';
+          steps.push(step(6,'red',`PaCO₂ ${mono(pv.toFixed(1))} <b>below</b> Winters' lower bound ${mono(wlo.toFixed(1))} → superimposed respiratory alkalosis`));
+        } else {
+          Diag=comp+'Metabolic Acidosis + Respiratory Acidosis';
+          steps.push(step(6,'red',`PaCO₂ ${mono(pv.toFixed(1))} <b>above</b> Winters' upper bound ${mono(whi.toFixed(1))} → superimposed respiratory acidosis`));
+        }
+      }
+    } else {
+      steps.push(step(2,'blue',`<b>pH ${pH.toFixed(2)} ≥ 7.40</b> → alkalaemia`));
+      tagLabel='Alkalosis'; tagClass='alkalosis'; diagClass='alkalosis';
+      if(pv<35){
+        steps.push(step(3,'blue',`<b>PaCO₂ ${pv.toFixed(1)} &lt; 35</b> → primary respiratory mechanism (hypocapnia driving alkalosis)`));
+        const acute=(pH>ph2);
+        const mult=acute?2:5;
+        const eq=22-((40-pv)/10)*mult, eq1=28-((40-pv)/10)*mult;
+        steps.push(step(4,'amber',`<b>${acute?'Acute':'Chronic'}:</b> pH ${acute?'> 7.50':'≤ 7.50'} → multiplier = ${mono(mult)}`));
+        steps.push(step(5,'amber',`Expected HCO₃ range: ${mono(eq.toFixed(1)+' – '+eq1.toFixed(1))} | Actual: ${mono(hv.toFixed(1))}`));
+        if(hv>eq&&hv<eq1){
+          Diag=`Simple ${acute?'Acute':'Chronic'} Respiratory Alkalosis`;
+          steps.push(step(6,'blue','HCO₃ within expected → <b>Simple</b> — appropriate compensation'));
+        } else if(hv<=eq){
+          Diag=`${acute?'Acute':'Chronic'} Respiratory Alkalosis + Metabolic Acidosis`;
+          steps.push(step(6,'red',`HCO₃ <b>below</b> expected lower bound → concurrent metabolic acidosis`));
+        } else {
+          Diag=`${acute?'Acute':'Chronic'} Respiratory Alkalosis + Metabolic Alkalosis`;
+          steps.push(step(6,'blue',`HCO₃ <b>above</b> expected upper bound → concurrent metabolic alkalosis`));
+        }
+      } else {
+        steps.push(step(3,'amber',`<b>PaCO₂ ${pv.toFixed(1)} ≥ 35</b> → primary metabolic mechanism (bicarbonate excess)`));
+        const comp=(pH>=ph1&&pH<=ph2)?'Compensated ':((pv>=35&&pv<=45)?'Uncompensated ':'Partially Compensated ');
+        steps.push(step(4,'amber',`<b>${comp.trim()}</b>`));
+        steps.push(step(5,'amber',`Met. alkalosis range → expected PaCO₂: ${mono(mlo.toFixed(1)+' – '+mhi.toFixed(1))} | Actual: ${mono(pv.toFixed(1))}`));
+        if(pv>=mlo&&pv<=mhi){
+          Diag=comp+'Simple Metabolic Alkalosis';
+          steps.push(step(6,'blue','PaCO₂ within expected → <b>Simple</b>'));
+        } else if(pv<mlo){
+          Diag=comp+'Metabolic Alkalosis + Respiratory Alkalosis';
+          steps.push(step(6,'blue','PaCO₂ <b>below</b> expected → superimposed respiratory alkalosis'));
+        } else {
+          Diag=comp+'Metabolic Alkalosis + Respiratory Acidosis';
+          steps.push(step(6,'red','PaCO₂ <b>above</b> expected → superimposed respiratory acidosis'));
+        }
+      }
+    }
+
+    // AG check
+    if(Diag.includes('Metabolic Acidosis')){
+      if(AG<=12){
+        AGdiag='Normal Anion Gap Acidosis (NAGA)';
+        steps.push(step(steps.length+1,'green',`<b>AG = ${AG.toFixed(1)} ≤ 12</b> → Normal anion gap — consider hyperchloraemia, diarrhoea, RTA`));
+      } else {
+        if(HG>6){AGdiag='High AG + concurrent Metabolic Alkalosis'; steps.push(step(steps.length+1,'amber',`<b>AG = ${AG.toFixed(1)} > 12</b>, HG = ${HG.toFixed(1)} > 6 → HAGMA + metabolic alkalosis`));}
+        else if(HG<-6){AGdiag='High AG + Normal AG Acidosis (mixed)'; steps.push(step(steps.length+1,'red',`<b>AG = ${AG.toFixed(1)} > 12</b>, HG = ${HG.toFixed(1)} < −6 → HAGMA + NAGA mixed`));}
+        else {AGdiag='High Anion Gap Metabolic Acidosis (HAGMA)'; steps.push(step(steps.length+1,'red',`<b>AG = ${AG.toFixed(1)} > 12</b>, HG = ${HG.toFixed(1)} within −6–+6 → pure HAGMA`));}
+      }
+    }
+  }
+
+  // Update DOM
+  const card=document.getElementById('diag-card');
+  card.className='diag-card '+diagClass;
+  const tag=document.getElementById('diag-tag');
+  tag.className='diag-tag '+tagClass;
+  tag.textContent=tagLabel;
+  document.getElementById('diag-primary').textContent=Diag||'—';
+  document.getElementById('diag-ag').innerHTML=AGdiag?`<span>Anion gap:</span> ${AGdiag}`:'';
+  document.getElementById('step-list').innerHTML=steps.join('');
+  // Show action buttons only when a real diagnosis exists
+  document.getElementById('diag-actions').style.display=(Diag&&diagClass!=='neutral')?'flex':'none';
+
+  // ── Show/hide UrC slider & prompt ──────────────────────
+  const urcBlock=document.getElementById('urc-slider-block');
+  const urcReq=document.getElementById('urc-required');
+  const showUrC=(cco2&&pH>=7.4);
+  urcBlock.style.display=showUrC?'block':'none';
+  urcReq.classList.toggle('hidden',!needsUrC);
+  // Update UrC slider display
+  if(showUrC){
+    const urcVal=g('sl-urc');
+    const niUrc=document.getElementById('ni-urc');
+    if(niUrc&&document.activeElement!==niUrc) niUrc.value=urcVal;
+    if(niUrc) niUrc.className='num-input warn';
+    const pctUrc=(urcVal/80*100).toFixed(1);
+    const rfUrc=document.getElementById('rf-urc');
+    if(rfUrc) rfUrc.style.cssText=`left:0;width:${pctUrc}%;background:${urcVal<20?'#de1738':'#017bb5'}`;
+  }
+
+  // ── SIG calculations ─────────────────────────────────
+  const SIG = nav+Ca+Mg+K - (clv+lac) - (hv + alb*(0.123*pH-0.631) + po4*(0.309*pH-0.469));
+  const BDE = -1*sbd - (nav-clv-38) + 0.25*(42-alb);
+
+  document.getElementById('sig-k-val').textContent=K.toFixed(1);
+  document.getElementById('sig-ca-val').textContent=Ca.toFixed(2);
+  document.getElementById('sig-mg-val').textContent=Mg.toFixed(2);
+  document.getElementById('sig-lac-val').textContent=lac.toFixed(1);
+  document.getElementById('sig-po4-val').textContent=po4.toFixed(2);
+  document.getElementById('sig-sbd-val').textContent=sbd.toFixed(1);
+
+  document.getElementById('sig-val').textContent=SIG.toFixed(2);
+  document.getElementById('bde-val').textContent=BDE.toFixed(2);
+
+  const sigAbnormal=SIG>2;
+  document.getElementById('sig-interp').textContent=sigAbnormal?'Abnormal — unmeasured anions present':'Normal (≤ 2 mmol/L)';
+  document.getElementById('bde-interp').textContent=BDE>4?'Elevated — unmeasured anion load':BDE<0?'Negative — check albumin/chloride':'Within expected range';
+
+  document.getElementById('sig-result-box').style.background=sigAbnormal?'#8b0f22':var_navy();
+  document.getElementById('bde-result-box').style.background=BDE>4?'#854F0B':'#017bb5';
+
+  const sigSteps=[];
+  sigSteps.push(step(1,'gray',`<b>Albumin charge contribution:</b> ${mono(alb)} × (0.123 × ${mono(pH.toFixed(2))} − 0.631) = ${mono((alb*(0.123*pH-0.631)).toFixed(2))}`));
+  sigSteps.push(step(2,'gray',`<b>Phosphate charge contribution:</b> ${mono(po4)} × (0.309 × ${mono(pH.toFixed(2))} − 0.469) = ${mono((po4*(0.309*pH-0.469)).toFixed(2))}`));
+  sigSteps.push(step(3,sigAbnormal?'red':'green',`<b>SIG = ${SIG.toFixed(2)} mmol/L</b> ${sigAbnormal?'— unmeasured strong anions present (ketones, toxins, uraemia)':'— no significant unmeasured anion burden'}`));
+  sigSteps.push(step(4,'blue',`<b>BDE gap = ${BDE.toFixed(2)}:</b> reflects unmeasured ion contribution to base deficit, corrected for Na/Cl ratio and hypoalbuminaemia`));
+  if(sigAbnormal&&BDE>4) sigSteps.push(step(5,'amber','<b>Both SIG and BDE elevated</b> — consider ketoacidosis, toxic alcohol, severe renal failure'));
+  document.getElementById('sig-steps').innerHTML=sigSteps.join('');
+}
+
+function var_navy(){return '#12385b'}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['abg','sig','batch'][i]===tab);
+  });
+  ['abg','sig','batch'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);
+    if(el) el.classList.toggle('active',t===tab);
+  });
+}
+
+// Checkboxes
+document.getElementById('sl-urc').addEventListener('input',()=>{
+  document.getElementById('sl-urc').dataset.entered='1';
+  activePreset=-1;
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  update();
+});
+
+['chk-cco2','chk-exac'].forEach(id=>{
+  const el=document.getElementById(id);
+  const row=document.getElementById(id+'-row');
+  el.addEventListener('change',()=>{
+    row.classList.toggle('checked',el.checked);
+    if(id==='chk-cco2'&&!el.checked){ document.getElementById('sl-urc').dataset.entered=''; }
+    activePreset=-1;
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+    update();
+  });
+});
+
+// Slider events — clear active preset on manual change
+['sl-pH','sl-pco2','sl-hco3','sl-na','sl-cl','sl-alb','sl-k','sl-ca','sl-mg','sl-lac','sl-po4','sl-sbd'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    activePreset=-1;
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+    update();
+  });
+});
+
+
+// ── Bidirectional number-input ↔ slider sync ────────────────
+(function(){
+  const pairs=[
+    {ni:'ni-pH',  sl:'sl-pH',  mn:6.80,mx:7.60,dp:2},
+    {ni:'ni-pco2',sl:'sl-pco2',mn:8,   mx:113, dp:1},
+    {ni:'ni-hco3',sl:'sl-hco3',mn:2,   mx:46,  dp:1},
+    {ni:'ni-na',  sl:'sl-na',  mn:110, mx:165, dp:0},
+    {ni:'ni-cl',  sl:'sl-cl',  mn:89,  mx:135, dp:0},
+    {ni:'ni-alb', sl:'sl-alb', mn:11,  mx:44,  dp:0},
+    {ni:'ni-k',   sl:'sl-k',   mn:1.5, mx:8.5, dp:1},
+    {ni:'ni-ca',  sl:'sl-ca',  mn:0.5, mx:3.0, dp:2},
+    {ni:'ni-mg',  sl:'sl-mg',  mn:0.3, mx:3.0, dp:2},
+    {ni:'ni-lac', sl:'sl-lac', mn:0.2, mx:15,  dp:1},
+    {ni:'ni-po4', sl:'sl-po4', mn:0.2, mx:3.0, dp:2},
+    {ni:'ni-sbd', sl:'sl-sbd', mn:0,   mx:30,  dp:1},
+    {ni:'ni-urc', sl:'sl-urc', mn:0,   mx:80,  dp:0, urc:true},
+  ];
+
+  pairs.forEach(({ni,sl,mn,mx,dp,urc})=>{
+    const niEl=document.getElementById(ni);
+    const slEl=document.getElementById(sl);
+    if(!niEl||!slEl) return;
+
+    // Typing in the number input
+    niEl.addEventListener('input',()=>{
+      let v=parseFloat(niEl.value);
+      if(isNaN(v)) return;
+      v=Math.max(mn,Math.min(mx,v));
+      slEl.value=v;
+      if(urc) slEl.dataset.entered='1';
+      activePreset=-1;
+      document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+      update();
+    });
+
+    // Commit on blur — clamp & reformat
+    niEl.addEventListener('blur',()=>{
+      let v=parseFloat(niEl.value);
+      if(isNaN(v)) v=parseFloat(slEl.value);
+      v=Math.max(mn,Math.min(mx,v));
+      slEl.value=v;
+      niEl.value=dp===0?Math.round(v):v.toFixed(dp);
+      if(urc) slEl.dataset.entered='1';
+      update();
+    });
+
+    // Allow Enter to commit + blur
+    niEl.addEventListener('keydown',(e)=>{
+      if(e.key==='Enter'){ niEl.blur(); e.preventDefault(); }
+      if(e.key==='Escape'){ niEl.value=dp===0?Math.round(parseFloat(slEl.value)):parseFloat(slEl.value).toFixed(dp); niEl.blur(); }
+    });
+
+    // Select all text on focus for fast overwrite
+    niEl.addEventListener('focus',()=>{ niEl.select(); });
+  });
+})();
+
+buildPresets();
+applyPreset(3);
+
+// ════════════════════════════════════════════════════════════
+// BATCH ENGINE
+// ════════════════════════════════════════════════════════════
+
+// ── Shared diagnosis engine (pure function, no DOM) ──────────
+function runDiagnosis(r){
+  const pH=+r.pH, pv=+r.paCO2||+r.pco2||+r.PaCO2||0;
+  const hv=+r.HCO3||+r.hco3||0;
+  const nav=+r.Na||+r.na||0, clv=+r.Cl||+r.cl||0, alb=+r.albumin||+r.Albumin||0;
+  const urc=+r.UrCl||+r.urCl||+r.ur_cl||0;
+  const cco2=!!(r.CCO2||r.cco2||r.chronic_co2);
+  const exac=!!(r.Exac||r.exac);
+  if(!pH||!pv||!hv) return {diag:'Incomplete Data',ag:'',cls:'neutral',steps:[]};
+  const ph1=7.3,ph2=7.5,p2=45;
+  let Diag='',AGdiag='',steps=[];
+  const AG=(nav&&clv&&alb)?nav-(clv+hv)+0.25*(44-alb):null;
+  const HG=(nav&&clv)?nav-clv-36:null;
+  const agsuf=()=>{if(AG===null)return'';if(AG<=12)return'Normal Anion Gap Acidosis (NAGA)';if(HG>6)return'High AG + Met. Alkalosis';if(HG<-6)return'High AG + Normal AG Acidosis';return'High Anion Gap Metabolic Acidosis (HAGMA)';};
+  const pHc=6.1+Math.log10(hv/(0.03*pv));
+  const diff=Math.abs(pHc-pH);
+  steps.push({c:'gray',t:`pH check: calc = ${pHc.toFixed(2)}, diff = ${diff.toFixed(2)}${diff>0.1?' — INCONSISTENT':' ✓'}`});
+  if(cco2){
+    if(pH<7.3&&pv<=57&&hv<24&&!exac){ Diag='Chronic Respiratory Acidosis + Metabolic Acidosis'; steps.push({c:'red',t:'CCO2: pH<7.3, PaCO2≤57, HCO3<24, no exac'}); }
+    else if(pH<7.3&&pv>2*hv-8&&hv>=30&&exac){ Diag='Acute on Top of Chronic Respiratory Acidosis'; steps.push({c:'red',t:'Acute-on-chronic criteria met'}); }
+    else if(pH<7.3&&pv>57&&hv<24&&exac){ Diag='Acute on Chronic Respiratory Acidosis + Metabolic Acidosis'; steps.push({c:'red',t:'Acute-on-chronic + met. acidosis'}); }
+    else if(pH>=7.4){
+      const thresh=0.92*(2*hv-8);
+      if(!urc){ Diag='Chronic Resp. Acidosis + Met. Alkalosis (Ur.Cl required)'; steps.push({c:'amber',t:'Urinary chloride not provided — subtype unknown'}); }
+      else if(pv<=thresh){ Diag=urc<20?'...Metabolic Alkalosis (Post-Hypercapnic)':'...Metabolic Alkalosis (Mixed)'; steps.push({c:'blue',t:`PaCO2≤thresh(${thresh.toFixed(1)}), Ur.Cl=${urc}`}); }
+      else { Diag=urc>=20?'...Met. Alkalosis (Independent, Cl-Resistant / Diuresis)':'...Met. Alkalosis (Independent, Cl-Responsive)'; steps.push({c:'blue',t:`PaCO2>thresh, Ur.Cl=${urc}`}); }
+    }
+  }
+  if(!Diag){
+    if(pH>=7.35&&pH<=7.45&&pv>=35&&pv<=45&&hv>=22&&hv<=28){ Diag='Normal ABG — Check Anion Gap'; steps.push({c:'green',t:'All within normal range'}); }
+    else if(pH<7.4){
+      steps.push({c:'red',t:`pH ${pH.toFixed(2)} < 7.4 → acidaemia`});
+      if(pv>=p2){
+        const acute=(pH<ph1||pH>ph2),mult=acute?1:4;
+        const eq=22-((40-pv)/10)*mult,eq1=28-((40-pv)/10)*mult;
+        steps.push({c:'amber',t:`PaCO2 ${pv.toFixed(1)} ≥ 45, ${acute?'acute':'chronic'}, expected HCO3: ${eq.toFixed(1)}–${eq1.toFixed(1)}, actual: ${hv.toFixed(1)}`});
+        if(hv>eq&&hv<eq1) Diag=`Simple ${acute?'Acute':'Chronic'} Respiratory Acidosis`;
+        else if(hv<=eq)   Diag=`${acute?'Acute':'Chronic'} Respiratory Acidosis + Metabolic Acidosis`;
+        else              Diag=`${acute?'Acute':'Chronic'} Respiratory Acidosis + Metabolic Alkalosis`;
+      } else {
+        const comp=(pH>=ph1&&pH<=ph2)?'Compensated ':((pv>=35&&pv<=45)?'Uncompensated ':'Partially Compensated ');
+        const wlo=0.9*(1.5*hv+4),whi=1.1*(1.5*hv+12);
+        steps.push({c:'amber',t:`PaCO2 ${pv.toFixed(1)} < 45, ${comp.trim()}, Winters': ${wlo.toFixed(1)}–${whi.toFixed(1)}, actual: ${pv.toFixed(1)}`});
+        if(pv>=wlo&&pv<=whi) Diag=comp+'Simple Metabolic Acidosis';
+        else if(pv<wlo)      Diag=comp+'Metabolic Acidosis + Respiratory Alkalosis';
+        else                 Diag=comp+'Metabolic Acidosis + Respiratory Acidosis';
+      }
+    } else {
+      steps.push({c:'blue',t:`pH ${pH.toFixed(2)} ≥ 7.4 → alkalaemia`});
+      if(pv<35){
+        const acute=(pH>ph2),mult=acute?2:5;
+        const eq=22-((40-pv)/10)*mult,eq1=28-((40-pv)/10)*mult;
+        steps.push({c:'amber',t:`PaCO2 ${pv.toFixed(1)} < 35, ${acute?'acute':'chronic'}, expected HCO3: ${eq.toFixed(1)}–${eq1.toFixed(1)}, actual: ${hv.toFixed(1)}`});
+        if(hv>eq&&hv<eq1) Diag=`Simple ${acute?'Acute':'Chronic'} Respiratory Alkalosis`;
+        else if(hv<=eq)   Diag=`${acute?'Acute':'Chronic'} Respiratory Alkalosis + Metabolic Acidosis`;
+        else              Diag=`${acute?'Acute':'Chronic'} Respiratory Alkalosis + Metabolic Alkalosis`;
+      } else {
+        const comp=(pH>=ph1&&pH<=ph2)?'Compensated ':((pv>=35&&pv<=45)?'Uncompensated ':'Partially Compensated ');
+        const mlo=0.9*(0.7*hv+15),mhi=1.1*(0.7*hv+15);
+        steps.push({c:'amber',t:`PaCO2 ${pv.toFixed(1)} ≥ 35, ${comp.trim()}, met.alk range: ${mlo.toFixed(1)}–${mhi.toFixed(1)}`});
+        if(pv>=mlo&&pv<=mhi) Diag=comp+'Simple Metabolic Alkalosis';
+        else if(pv<mlo)      Diag=comp+'Metabolic Alkalosis + Respiratory Alkalosis';
+        else                 Diag=comp+'Metabolic Alkalosis + Respiratory Acidosis';
+      }
+    }
+    if(AG!==null&&Diag.includes('Metabolic Acidosis')){ AGdiag=agsuf(); steps.push({c:'green',t:`AG = ${AG.toFixed(1)} → ${AGdiag}`}); }
+  }
+  const cls=Diag.includes('Acidosis')?'acidosis':Diag.includes('Alkalosis')?'alkalosis':Diag.includes('Normal')?'normal':'neutral';
+  return {diag:Diag,ag:AGdiag,cls,steps,pH,pv,hv,nav,clv,alb,AG,diff};
+}
+
+// ── Template download (SheetJS) ───────────────────────────────
+function downloadTemplate(){
+  const COLS=['Case ID','pH','PaCO2','HCO3','Na','Cl','Albumin','K','Ca','Mg','Lactate','PO4','Std_Base_Deficit','Ur_Cl','CCO2 (1=yes)','Exac (1=yes)'];
+  const SAMPLE=[
+    ['Case-001',7.44,27.75,18.2,135,110,32,3.7,1.1,0.9,1.6,1.1,4.2,0,0,0],
+    ['Case-002',7.27,39.75,17.6,125,103,29,4.4,1.0,1.0,2.5,1.2,7.8,0,0,0],
+    ['Case-003',7.30,38.25,18.2,126,104,28,4.2,1.0,1.0,1.5,1.0,6.9,0,0,0],
+    ['Case-004',7.20,65,24,138,102,38,4.0,1.2,0.8,1.2,1.1,2.0,0,0,0],
+    ['Case-005',7.51,28,22,138,103,38,3.8,1.2,0.8,1.0,1.0,1.5,0,0,0],
+  ];
+  const ws_data=[COLS,...SAMPLE];
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(ws_data);
+  // Column widths
+  ws['!cols']=[{wch:12},{wch:8},{wch:9},{wch:8},{wch:8},{wch:8},{wch:10},{wch:7},{wch:7},{wch:7},{wch:10},{wch:7},{wch:16},{wch:9},{wch:14},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,ws,'ABG Cases');
+  // Instructions sheet
+  const inst=[
+    ['ACID-BASE BATCH DIAGNOSIS TEMPLATE'],[''],
+    ['Column','Description','Unit','Required'],
+    ['Case ID','Unique identifier for the case','—','Yes'],
+    ['pH','Arterial blood pH','—','Yes'],
+    ['PaCO2','Partial pressure of CO2','mm Hg','Yes'],
+    ['HCO3','Serum bicarbonate','mmol/L','Yes'],
+    ['Na','Serum sodium','mmol/L','For AG'],
+    ['Cl','Serum chloride','mmol/L','For AG'],
+    ['Albumin','Serum albumin','g/L','For AG'],
+    ['K','Serum potassium','mmol/L','SIG only'],
+    ['Ca','Serum calcium','mmol/L','SIG only'],
+    ['Mg','Serum magnesium','mmol/L','SIG only'],
+    ['Lactate','Serum lactate','mmol/L','SIG only'],
+    ['PO4','Serum phosphate','mmol/L','SIG only'],
+    ['Std_Base_Deficit','Standard base deficit (positive value)','mmol/L','SIG only'],
+    ['Ur_Cl','Urinary chloride','mmol/L','CCO2 alkalosis only'],
+    ['CCO2 (1=yes)','Chronic CO2 retention (1 = yes, 0 = no)','—','Optional'],
+    ['Exac (1=yes)','Exacerbation (1 = yes, 0 = no)','—','Optional'],
+  ];
+  const ws2=XLSX.utils.aoa_to_sheet(inst);
+  ws2['!cols']=[{wch:20},{wch:45},{wch:14},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Instructions');
+  XLSX.writeFile(wb,'ABG_Batch_Template.xlsx');
+}
+
+// ── File import ───────────────────────────────────────────────
+let batchResults=[];
+
+function handleFileImport(file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      let rows=[];
+      if(file.name.endsWith('.csv')){
+        const lines=e.target.result.split('\n').filter(l=>l.trim());
+        const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+        rows=lines.slice(1).map(l=>{
+          const vals=l.split(',').map(v=>v.trim().replace(/^"|"$/g,''));
+          const obj={};
+          headers.forEach((h,i)=>obj[h]=vals[i]);
+          return obj;
+        });
+      } else {
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      }
+      if(!rows.length) throw new Error('No data rows found');
+      // Normalise column names (case-insensitive)
+      const norm=rows.map(r=>{
+        const n={};
+        Object.keys(r).forEach(k=>{
+          const lk=k.toLowerCase().replace(/[^a-z0-9]/g,'');
+          n[k]=r[k]; // keep original
+          // map to standard keys
+          if(/^ph$/.test(lk))           n.pH=+r[k];
+          if(/paco2|pco2/.test(lk))     n.paCO2=+r[k];
+          if(/hco3/.test(lk))           n.HCO3=+r[k];
+          if(/^na$/.test(lk))           n.Na=+r[k];
+          if(/^cl$/.test(lk))           n.Cl=+r[k];
+          if(/albumin/.test(lk))        n.albumin=+r[k];
+          if(/^k$/.test(lk))            n.K=+r[k];
+          if(/^ca$/.test(lk))           n.Ca=+r[k];
+          if(/^mg$/.test(lk))           n.Mg=+r[k];
+          if(/lactate/.test(lk))        n.lac=+r[k];
+          if(/^po4$/.test(lk))          n.po4=+r[k];
+          if(/base.*deficit|std.*bd|sbd/.test(lk)) n.sbd=+r[k];
+          if(/ur.*cl|urcl/.test(lk))    n.UrCl=+r[k];
+          if(/cco2|chronic/.test(lk))   n.CCO2=+r[k];
+          if(/exac/.test(lk))           n.Exac=+r[k];
+          if(/case.*id|caseid|id/.test(lk)) n.caseID=r[k]||('Case '+(rows.indexOf(r)+1));
+        });
+        if(!n.caseID) n.caseID='Case '+(rows.indexOf(r)+1);
+        return n;
+      });
+      batchResults=norm.map(r=>({...r, result:runDiagnosis(r)}));
+      renderBatchResults();
+      showImportStatus(`Imported ${batchResults.length} case${batchResults.length!==1?'s':''} successfully`,'success');
+    } catch(err){
+      showImportStatus('Import failed: '+err.message,'error');
+    }
+  };
+  file.name.endsWith('.csv')?reader.readAsText(file):reader.readAsArrayBuffer(file);
+}
+
+function showImportStatus(msg,type){
+  const el=document.getElementById('import-status');
+  el.style.display='block';
+  el.style.background=type==='success'?'rgba(26,122,58,.1)':'rgba(222,23,56,.1)';
+  el.style.border='1px solid '+(type==='success'?'rgba(26,122,58,.3)':'rgba(222,23,56,.3)');
+  el.style.color=type==='success'?'#0f4a22':'#8b0f22';
+  el.textContent=msg;
+}
+
+// ── Render results ────────────────────────────────────────────
+function getBadgeClass(cls){return cls==='acidosis'?'badge-acid':cls==='alkalosis'?'badge-alk':cls==='normal'?'badge-norm':'badge-mix';}
+
+function renderBatchResults(){
+  const sec=document.getElementById('batch-results-section');
+  sec.style.display='block';
+  document.getElementById('batch-case-count').textContent=batchResults.length;
+
+  // Summary pills
+  const counts={acidosis:0,alkalosis:0,normal:0,neutral:0};
+  batchResults.forEach(r=>counts[r.result.cls]=(counts[r.result.cls]||0)+1);
+  const pillStyles={acidosis:'background:#fff5f7;border-color:rgba(222,23,56,.3);color:#8b0f22',alkalosis:'background:#f0f8ff;border-color:rgba(1,123,181,.3);color:#014f77',normal:'background:#f0fff5;border-color:rgba(26,122,58,.3);color:#0f4a22'};
+  const pillLabels={acidosis:'Acidosis','alkalosis':'Alkalosis',normal:'Normal',neutral:'Incomplete'};
+  document.getElementById('batch-summary-pills').innerHTML=Object.entries(counts).filter(([,v])=>v>0).map(([k,v])=>`<span class="summary-pill" style="${pillStyles[k]||'background:var(--bg);border-color:var(--border);color:var(--muted)'}">${v} ${pillLabels[k]||k}</span>`).join('');
+
+  // Individual cases
+  const dotColors={gray:'#888780',red:'#8b0f22',blue:'#014f77',amber:'#7a4e00',green:'#0f4a22'};
+  const dotBg={gray:'rgba(136,135,128,.15)',red:'rgba(222,23,56,.12)',blue:'rgba(1,123,181,.12)',amber:'rgba(185,120,0,.12)',green:'rgba(26,122,58,.12)'};
+  document.getElementById('batch-cases-list').innerHTML=batchResults.map((r,i)=>{
+    const res=r.result;
+    const inMap={pH:r.pH,PaCO2:r.paCO2,HCO3:r.HCO3,Na:r.Na,Cl:r.Cl,Albumin:r.albumin};
+    const inTiles=Object.entries(inMap).filter(([,v])=>v&&!isNaN(v)).map(([k,v])=>`<div class="batch-inp-tile"><div class="batch-inp-lbl">${k}</div><div class="batch-inp-val">${parseFloat(v).toFixed(2).replace(/\.?0+$/,'')}</div></div>`).join('');
+    const stepHtml=res.steps.map((s,si)=>`<li class="batch-step"><div class="batch-step-dot" style="background:${dotBg[s.c]||dotBg.gray};color:${dotColors[s.c]||dotColors.gray}">${si+1}</div><span style="color:var(--text)">${s.t}</span></li>`).join('');
+    return `<div class="batch-case" id="bc-${i}">
+      <div class="batch-case-header" onclick="toggleCase(${i})">
+        <div class="batch-case-num">${i+1}</div>
+        <div class="batch-case-id">${r.caseID}</div>
+        <div class="batch-case-diag">${res.diag}</div>
+        <span class="batch-diag-badge ${getBadgeClass(res.cls)}">${res.cls==='normal'?'Normal':res.cls==='acidosis'?'Acidosis':res.cls==='alkalosis'?'Alkalosis':'—'}</span>
+        <span class="batch-chevron">▶</span>
+      </div>
+      <div class="batch-case-body">
+        <div class="batch-inputs-grid">${inTiles}</div>
+        <div class="batch-diag-box ${res.cls}">
+          <div class="batch-diag-primary">${res.diag}</div>
+          ${res.ag?`<div class="batch-diag-ag">${res.ag}</div>`:''}
+        </div>
+        <ul class="batch-steps">${stepHtml}</ul>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCase(i){
+  document.getElementById('bc-'+i).classList.toggle('open');
+}
+
+// ── Excel export ──────────────────────────────────────────────
+function exportBatchExcel(){
+  const NAVY='FF12385B', BLUE='FF017BB5', RED='FFde1738', WHITE='FFFFFFFF', BG='FFe9f0f8', LBLUE='FFddeeff', LRED='FFfff0f2', LGREEN='FFf0fff5';
+  const wb=XLSX.utils.book_new();
+
+  // Summary sheet
+  const sumRows=[['Acid-Base Batch Diagnosis Report'],['Generated: '+new Date().toLocaleDateString()],[''],
+    ['Case ID','pH','PaCO₂','HCO₃','Na','Cl','Albumin','Primary Diagnosis','Anion Gap','Diagnosis Class']];
+  batchResults.forEach(r=>{
+    const res=r.result;
+    sumRows.push([r.caseID,r.pH,r.paCO2,r.HCO3,r.Na||'',r.Cl||'',r.albumin||'',res.diag,res.ag||'',res.cls]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(sumRows);
+  ws['!cols']=[{wch:14},{wch:8},{wch:9},{wch:8},{wch:8},{wch:8},{wch:10},{wch:50},{wch:38},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,'Summary');
+
+  // Individual detail sheet
+  const detRows=[['Case ID','Step','Decision']];
+  batchResults.forEach(r=>{
+    r.result.steps.forEach((s,i)=>detRows.push([r.caseID,i+1,s.t]));
+    detRows.push(['','','']);
+  });
+  const ws2=XLSX.utils.aoa_to_sheet(detRows);
+  ws2['!cols']=[{wch:14},{wch:6},{wch:80}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Decision Paths');
+
+  XLSX.writeFile(wb,'ABG_Batch_Results.xlsx');
+}
+
+// ── PDF export (jsPDF) ────────────────────────────────────────
+function exportBatchPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,M=14,CW=W-2*M;
+  const NAVY=[18,56,91], BLUE=[1,123,181], RED=[222,23,56];
+  const LRED=[255,240,242], LBLUE=[240,248,255], LGREEN=[240,255,245], LGRAY=[245,247,250];
+
+  let y=0;
+
+  function newPage(){
+    doc.addPage();
+    y=16;
+    // Header stripe
+    doc.setFillColor(...NAVY);
+    doc.rect(0,0,W,10,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(7);
+    doc.setFont('helvetica','bold');
+    doc.text('ACID-BASE BATCH DIAGNOSIS REPORT',M,6.5);
+    doc.text('Page '+doc.getCurrentPageInfo().pageNumber,W-M,6.5,'right');
+    y=16;
+  }
+
+  function checkY(need){
+    if(y+need>280) newPage();
+  }
+
+  // Cover page
+  doc.setFillColor(...NAVY);
+  doc.rect(0,0,W,55,'F');
+  doc.setFillColor(...BLUE);
+  doc.rect(0,55,W,3,'F');
+
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(22);
+  doc.text('Acid-Base Diagnosis',M,22);
+  doc.setFontSize(13);
+  doc.setFont('helvetica','normal');
+  doc.text('Batch Analysis Report',M,32);
+  doc.setFontSize(9);
+  doc.text(`${batchResults.length} cases  ·  ${new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'})}`,M,42);
+
+  y=68;
+  // Summary table header
+  doc.setFillColor(...LGRAY);
+  doc.rect(M,y,CW,8,'F');
+  doc.setTextColor(...NAVY);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  const sumCols=[['#',8],['Case ID',28],['pH',14],['PaCO₂',16],['HCO₃',16],['Diagnosis',60],['Class',26]];
+  let sx=M;
+  sumCols.forEach(([h,w])=>{ doc.text(h,sx+2,y+5.2); sx+=w; });
+  y+=8;
+
+  const clsColor={acidosis:LRED,alkalosis:LBLUE,normal:LGREEN,neutral:LGRAY};
+  const clsLabel={acidosis:'Acidosis',alkalosis:'Alkalosis',normal:'Normal',neutral:'—'};
+  batchResults.forEach((r,i)=>{
+    checkY(9);
+    const bg=i%2===0?[255,255,255]:LGRAY;
+    doc.setFillColor(...bg);
+    doc.rect(M,y,CW,8,'F');
+    const res=r.result;
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(14,42,66);
+    const vals=[[(i+1).toString(),8],[r.caseID.toString().substring(0,14),28],[(+r.pH).toFixed(2),14],[(+r.paCO2).toFixed(1),16],[(+r.HCO3).toFixed(1),16],[res.diag.substring(0,38),60],[clsLabel[res.cls]||'—',26]];
+    let vx=M;
+    vals.forEach(([v,w])=>{ doc.text(v,vx+2,y+5.2); vx+=w; });
+    y+=8;
+  });
+
+  // Individual case pages
+  batchResults.forEach((r,i)=>{
+    newPage();
+    const res=r.result;
+    const hBg=res.cls==='acidosis'?LRED:res.cls==='alkalosis'?LBLUE:res.cls==='normal'?LGREEN:LGRAY;
+    const hBorder=res.cls==='acidosis'?RED:res.cls==='alkalosis'?BLUE:res.cls==='normal'?[26,122,58]:NAVY;
+
+    // Case header
+    doc.setFillColor(...hBg);
+    doc.roundedRect(M,y,CW,14,2,2,'F');
+    doc.setDrawColor(...hBorder);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(M,y,CW,14,2,2,'S');
+    doc.setFillColor(...hBorder);
+    doc.rect(M,y,3,14,'F');
+    doc.setTextColor(...NAVY);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.text(`Case ${i+1}: ${r.caseID}`,M+6,y+5.5);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(107,136,162);
+    doc.text(`pH ${(+r.pH).toFixed(2)}  ·  PaCO₂ ${(+r.paCO2).toFixed(1)} mm Hg  ·  HCO₃ ${(+r.HCO3).toFixed(1)} mmol/L`,M+6,y+10.5);
+    y+=18;
+
+    // Diagnosis result
+    doc.setFillColor(...NAVY);
+    doc.rect(M,y,CW,8,'F');
+    doc.setFill(255,255,255);
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.text('Diagnosis',M+3,y+5.2);
+    y+=8;
+    doc.setFillColor(...hBg);
+    doc.rect(M,y,CW,10,'F');
+    doc.setTextColor(...NAVY);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9.5);
+    const diagLines=doc.splitTextToSize(res.diag,CW-6);
+    doc.text(diagLines,M+3,y+5.5);
+    y+=Math.max(10,diagLines.length*5)+2;
+    if(res.ag){
+      checkY(7);
+      doc.setFillColor(240,248,220);
+      doc.rect(M,y,CW,7,'F');
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(50,100,50);
+      doc.text('Anion gap: '+res.ag,M+3,y+4.8);
+      y+=9;
+    }
+
+    // Input values
+    checkY(14);
+    y+=3;
+    doc.setFillColor(...LGRAY);
+    doc.rect(M,y,CW,7,'F');
+    doc.setTextColor(...NAVY);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8);
+    doc.text('Input values',M+3,y+4.8);
+    y+=7;
+    const fields=[['pH',(+r.pH).toFixed(2)],['PaCO₂',(+(r.paCO2||0)).toFixed(1)+' mm Hg'],['HCO₃',(+(r.HCO3||0)).toFixed(1)+' mmol/L'],['Na',(r.Na||'—')+''],['Cl',(r.Cl||'—')+''],['Albumin',(r.albumin||'—')+' g/L']];
+    const tileW=CW/3, tileH=9;
+    fields.forEach(([lbl,val],fi)=>{
+      const tx=M+(fi%3)*tileW, ty=y+Math.floor(fi/3)*tileH;
+      checkY(tileH);
+      doc.setFillColor(255,255,255);
+      doc.setDrawColor(...[218,225,235]);
+      doc.setLineWidth(0.3);
+      doc.rect(tx,ty,tileW-1,tileH,'FD');
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(107,136,162);
+      doc.text(lbl,tx+2,ty+3.2);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...NAVY);
+      doc.text(val,tx+2,ty+7.5);
+    });
+    y+=Math.ceil(fields.length/3)*tileH+5;
+
+    // Decision path
+    checkY(12);
+    doc.setFillColor(...LGRAY);
+    doc.rect(M,y,CW,7,'F');
+    doc.setTextColor(...NAVY);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8);
+    doc.text('Decision path',M+3,y+4.8);
+    y+=9;
+    res.steps.forEach((s,si)=>{
+      checkY(8);
+      const dotClr=s.c==='red'?RED:s.c==='blue'?BLUE:s.c==='green'?[26,122,58]:s.c==='amber'?[186,117,23]:NAVY;
+      doc.setFillColor(...dotClr);
+      doc.circle(M+3,y+3,2,'F');
+      doc.setTextColor(255,255,255);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(6);
+      doc.text((si+1).toString(),M+3,y+3.8,'center');
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.setTextColor(14,42,66);
+      const lines=doc.splitTextToSize(s.t,CW-10);
+      doc.text(lines,M+8,y+4);
+      y+=lines.length*4.5+2;
+    });
+  });
+
+  doc.save('ABG_Batch_Results.pdf');
+}
+
+// Drag-and-drop
+(function(){
+  const dz=document.getElementById('drop-zone');
+  if(!dz) return;
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover')});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f)handleFileImport(f);});
+})();
+
+// ════════════════════════════════════════════════════════════
+// ABOUT MODAL
+// ════════════════════════════════════════════════════════════
+function openAbout(){
+  document.getElementById('about-modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeAbout(){
+  document.getElementById('about-modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closeAboutOutside(e){
+  if(e.target===document.getElementById('about-modal')) closeAbout();
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeAbout(); });
+
+// ════════════════════════════════════════════════════════════
+// COPY DIAGNOSIS TO CLIPBOARD
+// ════════════════════════════════════════════════════════════
+function copyDiagnosis(){
+  const primary=document.getElementById('diag-primary').textContent||'';
+  const ag=document.getElementById('diag-ag').textContent||'';
+  const pH=g('sl-pH'), pv=g('sl-pco2'), hv=g('sl-hco3');
+  const lines=[
+    'Acid-Base Analyser — ABG Report',
+    '─────────────────────────────────',
+    `pH: ${pH.toFixed(2)}  |  PaCO₂: ${pv.toFixed(1)} mm Hg  |  HCO₃⁻: ${hv.toFixed(1)} mmol/L`,
+    '',
+    `Diagnosis: ${primary}`,
+  ];
+  if(ag.trim()) lines.push(`Anion Gap: ${ag.trim()}`);
+  lines.push('', new Date().toLocaleString());
+  const text=lines.join('\n');
+  const btn=document.getElementById('copy-diag-btn');
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>{
+      btn.classList.add('copied');
+      btn.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6L4.5 9.5L11 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!';
+      setTimeout(()=>{
+        btn.classList.remove('copied');
+        btn.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="4" y="1" width="7" height="8.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="2.5" width="7" height="8.5" rx="1.2" stroke="currentColor" stroke-width="1.3" fill="white"/></svg> Copy';
+      },2200);
+    }).catch(()=>{ fallbackCopy(text,btn); });
+  } else { fallbackCopy(text,btn); }
+}
+function fallbackCopy(text,btn){
+  const ta=document.createElement('textarea');
+  ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+  btn.classList.add('copied');
+  btn.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6L4.5 9.5L11 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!';
+  setTimeout(()=>{
+    btn.classList.remove('copied');
+    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="4" y="1" width="7" height="8.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="2.5" width="7" height="8.5" rx="1.2" stroke="currentColor" stroke-width="1.3" fill="white"/></svg> Copy';
+  },2200);
+}
+
+// ════════════════════════════════════════════════════════════
+// SINGLE-CASE PDF EXPORT
+// ════════════════════════════════════════════════════════════
+
+// Convert Unicode symbols → ASCII so jsPDF Helvetica renders them correctly
+function pdfSafe(str){
+  return (str||'')
+    // Subscripts / superscripts
+    .replace(/\u2080/g,'0').replace(/\u2081/g,'1').replace(/\u2082/g,'2')
+    .replace(/\u2083/g,'3').replace(/\u2084/g,'4')
+    .replace(/\u207B/g,'-').replace(/\u207A/g,'+')
+    // Greek / math
+    .replace(/\u0394|\u2206/g,'delta')   // Δ
+    .replace(/\u00D7/g,'x')              // ×
+    .replace(/\u00F7/g,'/')              // ÷
+    .replace(/\u2212/g,'-')              // − (minus sign)
+    .replace(/\u2013/g,'-')              // – (en dash)
+    .replace(/\u2014/g,'--')             // — (em dash)
+    .replace(/\u2264/g,'<=')             // ≤
+    .replace(/\u2265/g,'>=')             // ≥
+    .replace(/\u2260/g,'!=')             // ≠
+    .replace(/\u2192/g,'->').replace(/\u2190/g,'<-')  // → ←
+    .replace(/\u2191/g,'(high)').replace(/\u2193/g,'(low)')  // ↑ ↓
+    .replace(/\u00B7|\u22C5/g,'.')       // · middle dot
+    // Ticks / crosses
+    .replace(/\u2713|\u2714/g,'[OK]')    // ✓ ✔
+    .replace(/\u2717|\u2718/g,'[X]')     // ✗ ✘
+    // Quotes / spaces
+    .replace(/[\u2018\u2019]/g,"'")
+    .replace(/[\u201C\u201D]/g,'"')
+    .replace(/\u00A0/g,' ')
+    // Strip any remaining non-Latin1 characters
+    .replace(/[^\x00-\xFF]/g,'');
+}
+
+function exportSinglePDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210, M=16, CW=W-2*M;
+  const NAVY=[18,56,91], BLUE=[1,123,181], RED=[222,23,56];
+  const LGRAY=[233,240,248];
+
+  // Gather values
+  const pH=g('sl-pH'), pv=g('sl-pco2'), hv=g('sl-hco3');
+  const nav=g('sl-na'), clv=g('sl-cl'), alb=g('sl-alb');
+  const diagText=pdfSafe(document.getElementById('diag-primary').textContent||'');
+  const agText=pdfSafe((document.getElementById('diag-ag').textContent||'').replace(/^\s*Anion gap:\s*/i,''));
+  const diagClass=document.getElementById('diag-card').className.replace('diag-card','').trim();
+  const stepEls=[...document.querySelectorAll('#step-list .step-body')];
+  const stepNums=[...document.querySelectorAll('#step-list .step-num')];
+
+  const hBg=diagClass==='acidosis'?[255,245,247]:diagClass==='alkalosis'?[240,248,255]:diagClass==='normal'?[240,255,245]:LGRAY;
+  const hBdr=diagClass==='acidosis'?RED:diagClass==='alkalosis'?BLUE:diagClass==='normal'?[26,122,58]:NAVY;
+
+  let y=0;
+
+  // ── Cover header ──
+  doc.setFillColor(...NAVY);
+  doc.rect(0,0,W,50,'F');
+  doc.setFillColor(...BLUE);
+  doc.rect(0,50,W,2.5,'F');
+
+  doc.setFillColor(...BLUE);
+  doc.roundedRect(M,13,26,24,3,3,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.text('ABG',M+13,28,'center');
+
+  doc.setFontSize(17);
+  doc.text('Acid-Base Analyser',M+32,22);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(190,215,235);
+  doc.text('Arterial Blood Gas Diagnostic Report',M+32,30);
+  doc.setFontSize(8.5);
+  doc.setTextColor(150,185,215);
+  doc.text(new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'}),M+32,40);
+  doc.text('Atef Radwan',W-M,40,'right');
+
+  y=60;
+
+  // ── Input values — ASCII labels only ──
+  doc.setFillColor(...LGRAY);
+  doc.roundedRect(M,y,CW,8,2,2,'F');
+  doc.setTextColor(...NAVY);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.text('INPUT VALUES',M+3,y+5.2);
+  y+=8;
+
+  const fields=[
+    ['pH',          pH.toFixed(2),           7.35,7.45],
+    ['PaCO2 (mmHg)',pv.toFixed(1)+' mm Hg',  35,  45  ],
+    ['HCO3- (mmol/L)',hv.toFixed(1)+' mmol/L',22,28   ],
+    ['Na+ (mmol/L)', nav.toFixed(0)+' mmol/L',136,145 ],
+    ['Cl- (mmol/L)', clv.toFixed(0)+' mmol/L',98, 107 ],
+    ['Albumin (g/L)', alb.toFixed(0)+' g/L',  35,  50 ],
+  ];
+  const tW=CW/3, tH=11;
+  fields.forEach(([lbl,val,lo,hi],fi)=>{
+    const tx=M+(fi%3)*tW, ty=y+Math.floor(fi/3)*tH;
+    const raw=parseFloat(val);
+    const ok=(raw>=lo&&raw<=hi);
+    doc.setFillColor(255,255,255);
+    doc.setDrawColor(215,225,238);
+    doc.setLineWidth(.3);
+    doc.rect(tx,ty,tW-1,tH,'FD');
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7);
+    doc.setTextColor(107,136,162);
+    doc.text(lbl,tx+2.5,ty+3.8);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(ok?26:222, ok?122:23, ok?58:56);
+    doc.text(val,tx+2.5,ty+8.8);
+  });
+  y+=Math.ceil(fields.length/3)*tH+6;
+
+  // ── Diagnosis result ──
+  doc.setFillColor(...hBdr);
+  doc.rect(M,y,CW,3,'F');
+  y+=3;
+  doc.setFillColor(...hBg);
+  doc.setDrawColor(...hBdr);
+  doc.setLineWidth(.4);
+  const diagLines=doc.splitTextToSize(diagText,CW-10);
+  const diagH=Math.max(16,diagLines.length*5.5+8);
+  doc.rect(M,y,CW,diagH,'FD');
+  doc.setFillColor(...hBdr);
+  doc.rect(M,y,3.5,diagH,'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(...NAVY);
+  doc.text(diagLines,M+7,y+6);
+  if(agText){
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(107,136,162);
+    doc.text('Anion gap: '+agText,M+7,y+diagH-4);
+  }
+  y+=diagH+5;
+
+  // ── Calculated values — ASCII labels ──
+  const calcPH=(6.1+Math.log10(hv/(0.03*pv))).toFixed(2);
+  const AG=(nav-(clv+hv)+0.25*(44-alb)).toFixed(1);
+  const HG=(nav-clv-36).toFixed(1);
+
+  doc.setFillColor(...LGRAY);
+  doc.roundedRect(M,y,CW,8,2,2,'F');
+  doc.setTextColor(...NAVY);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.text('CALCULATED VALUES',M+3,y+5.2);
+  y+=8;
+
+  [['Calc. pH',calcPH],['Corr. AG',AG],['HCO3 gap (delta-delta)',HG]].forEach(([lbl,val],i)=>{
+    const tx=M+i*(CW/3);
+    doc.setFillColor(255,255,255);
+    doc.setDrawColor(215,225,238);
+    doc.setLineWidth(.3);
+    doc.rect(tx,y,CW/3-1,11,'FD');
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7);
+    doc.setTextColor(107,136,162);
+    doc.text(lbl,tx+2.5,y+3.8);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...NAVY);
+    doc.text(String(val),tx+2.5,y+9);
+  });
+  y+=13;
+
+  // ── Decision path ──
+  doc.setFillColor(...LGRAY);
+  doc.roundedRect(M,y,CW,8,2,2,'F');
+  doc.setTextColor(...NAVY);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.text('DECISION PATH',M+3,y+5.2);
+  y+=10;
+
+  const colorMap={gray:NAVY,red:RED,blue:BLUE,green:[26,122,58],amber:[185,120,0]};
+  stepEls.forEach((el,si)=>{
+    if(y>272){ doc.addPage(); y=18; }
+    const cls=(stepNums[si]?.className||'').replace('step-num','').trim();
+    const clr=colorMap[cls]||NAVY;
+    // Coloured step number circle
+    doc.setFillColor(...clr);
+    doc.circle(M+3.5,y+3.5,2.5,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7);
+    doc.text((si+1).toString(),M+3.5,y+4.4,'center');
+    // Step text — sanitise all Unicode before handing to jsPDF
+    const plain=pdfSafe(el.innerText.replace(/\s+/g,' ').trim());
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(14,42,66);
+    const lines=doc.splitTextToSize(plain,CW-12);
+    doc.text(lines,M+9,y+4.5);
+    y+=lines.length*5+2.5;
+  });
+
+  // ── Footer on every page ──
+  const total=doc.getNumberOfPages();
+  for(let p=1;p<=total;p++){
+    doc.setPage(p);
+    doc.setFillColor(...LGRAY);
+    doc.rect(0,285,W,12,'F');
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(107,136,162);
+    doc.text('Acid-Base Analyser  |  ABG Diagnostic Tool  |  For educational use - always correlate with clinical findings',M,290.5);
+    doc.text('Page '+p+' / '+total,W-M,290.5,'right');
+  }
+
+  doc.save('ABG_Report_'+new Date().toISOString().slice(0,10)+'.pdf');
+}
+
+// ════════════════════════════════════════════════════════════
+// PWA SUPPORT
+// ════════════════════════════════════════════════════════════
+let _deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  _deferredInstall=e;
+  if(!sessionStorage.getItem('pwaDismissed')){
+    setTimeout(()=>document.getElementById('pwa-bar').classList.add('show'),3000);
+  }
+});
+function installPWA(){
+  if(!_deferredInstall) return;
+  _deferredInstall.prompt();
+  _deferredInstall.userChoice.then(()=>{
+    _deferredInstall=null;
+    document.getElementById('pwa-bar').classList.remove('show');
+  });
+}
+function dismissPWA(){
+  document.getElementById('pwa-bar').classList.remove('show');
+  sessionStorage.setItem('pwaDismissed','1');
+}
+window.addEventListener('appinstalled',()=>document.getElementById('pwa-bar').classList.remove('show'));
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
+</script>
+</body>
+</html>

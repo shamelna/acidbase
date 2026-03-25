@@ -1,26 +1,26 @@
 {
-  "short_name": "Acid Base",
-  "name": "Acid Base Medical Diagnosis",
-  "description": "Professional medical tool for acid-base analysis and diagnosis",
+  "name": "Acid-Base Analyser",
+  "short_name": "ABG Analyser",
+  "description": "Professional arterial blood gas diagnostic tool for healthcare providers",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e9f0f8",
+  "theme_color": "#12385b",
+  "categories": ["medical", "education"],
   "icons": [
     {
-      "src": "logo192.png",
+      "src": "../logo192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "logo512.png",
-      "type": "image/png",
+      "src": "../logo512.png",
       "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#12385b",
-  "background_color": "#ffffff",
-  "orientation": "portrait",
-  "scope": "/",
-  "categories": ["medical", "health", "productivity"]
+  ]
 }
