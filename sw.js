@@ -1,7 +1,7 @@
 // Acid-Base Analyser — Service Worker
 // Caches the app shell for offline use.
 
-const CACHE_NAME = 'abg-analyser-v1';
+const CACHE_NAME = 'abg-analyser-v2';
 
 // Assets to pre-cache on install
 const PRECACHE_ASSETS = [
