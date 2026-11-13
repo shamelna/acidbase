@@ -1,7 +1,9 @@
 // Acid-Base Analyser — Service Worker
 // Caches the app shell for offline use.
 
-const CACHE_NAME = 'abg-analyser-v2';
+// Keep in sync with APP_VERSION in index.html — workers can't see page globals.
+const SW_VERSION = '1.3.0';
+const CACHE_NAME = `abg-analyser-v${SW_VERSION}`;
 
 // Assets to pre-cache on install
 const PRECACHE_ASSETS = [
@@ -24,6 +26,13 @@ self.addEventListener('install', event => {
     })
   );
   self.skipWaiting();
+});
+
+// ── Version check and cache cleanup ───────────────────────────
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // ── Activate: remove old caches ──────────────────────────────

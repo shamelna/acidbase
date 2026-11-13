@@ -1,1 +1,9 @@
 archive/development/node_modules/
+
+# dev artifacts — never deploy
+ui_check/
+outputs/
+brain/
+.firebase/
+debug.html
+test.html
