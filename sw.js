@@ -2,7 +2,7 @@
 // Caches the app shell for offline use.
 
 // Keep in sync with APP_VERSION in index.html — workers can't see page globals.
-const SW_VERSION = '1.3.0';
+const SW_VERSION = '1.3.1';
 const CACHE_NAME = `abg-analyser-v${SW_VERSION}`;
 
 // Assets to pre-cache on install
