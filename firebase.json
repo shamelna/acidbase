@@ -4,7 +4,17 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "brain/**",
+      "ui_check/**",
+      "outputs/**",
+      "server.py",
+      "debug.html",
+      "test.html",
+      "*.md",
+      "*.docx",
+      "*.txt",
+      "~$*"
     ],
     "rewrites": [
       {
